@@ -1,0 +1,49 @@
+{
+  "name": "expo-bluetooth-printer",
+  "version": "0.1.0",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "clean": "expo-module clean",
+    "build": "expo-module build",
+    "test": "expo-module test",
+    "lint": "expo-module lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "react-native",
+    "expo",
+    "expo-bluetooth-printer",
+    "ExpoBluetoothPrinter"
+  ],
+  "repository": "https://github.com/alvarosilveiraa/expo-bluetooth-printer",
+  "bugs": {
+    "url": "https://github.com/alvarosilveiraa/expo-bluetooth-printer/issues"
+  },
+  "author": "Alvaro Silveira <alvarosilveiraa@gmail.com> (https://github.com/alvarosilveiraa)",
+  "license": "MIT",
+  "homepage": "https://github.com/alvarosilveiraa/expo-bluetooth-printer",
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.2.0",
+    "@eslint/js": "^9.20.0",
+    "@types/react": "~18.3.12",
+    "eslint": "^9.20.1",
+    "expo": "~52.0.28",
+    "expo-module-scripts": "^4.0.4",
+    "jest": "^29.7.0",
+    "react-native": "0.76.7",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.24.0"
+  },
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  },
+  "engines": {
+    "node": "20.x",
+    "npm": "10.x",
+    "yarn": "4.x"
+  },
+  "packageManager": "yarn@4.6.0"
+}
