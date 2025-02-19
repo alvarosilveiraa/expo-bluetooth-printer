@@ -5,13 +5,18 @@ public class ExpoBluetoothPrinterModule: Module {
   public func definition() -> ModuleDefinition {
     Name("ExpoBluetoothPrinter")
 
-    AsyncFunction("getDevices") {
-      EAAccessoryManager.shared().connectedAccessories.map { accessory in
+    Events("onDevices")
+
+    AsyncFunction("loadDevices") {
+      let devices = EAAccessoryManager.shared().connectedAccessories.map { accessory in
         [
           "id": accessory.serialNumber,
           "name": accessory.name
         ]
       }
+      self.sendEvent("onDevices", , [
+        "devices": devices
+      ])
     }
 
     AsyncFunction("printText") { deviceId: String, text: String in
@@ -23,23 +28,13 @@ public class ExpoBluetoothPrinterModule: Module {
       if let outputStream = self.session?.outputStream {
         outputStream.schedule(in: .current, forMode: .default)
         outputStream.open()
-        
-        // Envia comando de reset ESC/POS
-        let resetCommand: [UInt8] = [0x1B, 0x40]
-        outputStream.write(resetCommand, maxLength: resetCommand.count)
-        
-        // Envia o texto para impressão
-        let textToPrint = "\(text)\n\n\n"
-        if let data = textToPrint.data(using: .utf8) {
+        outputStream.write([0x1B, 0x40], maxLength: 2)
+        if let data = "\(text)\n\n\n".data(using: .utf8) {
           _ = data.withUnsafeBytes {
             outputStream.write($0.bindMemory(to: UInt8.self).baseAddress!, maxLength: data.count)
           }
         }
-        
-        // Envia comando de corte de papel (opcional)
-        let cutCommand: [UInt8] = [0x1D, 0x56, 0x41, 0x10]
-        outputStream.write(cutCommand, maxLength: cutCommand.count)
-        
+        outputStream.write([0x1D, 0x56, 0x41, 0x10], maxLength: 4)
         outputStream.close()
       } else {
         throw NSError(domain: "ExpoBluetoothPrinter", code: 500, userInfo: [NSLocalizedDescriptionKey: "Failed to open output stream"])
