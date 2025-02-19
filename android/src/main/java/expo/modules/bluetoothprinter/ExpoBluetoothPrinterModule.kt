@@ -3,6 +3,10 @@ package expo.modules.bluetoothprinter
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.util.Log
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
@@ -13,30 +17,40 @@ import java.io.IOException
 import java.util.*
 
 class ExpoBluetoothPrinterModule : Module() {
+  private val adapter = BluetoothAdapter.getDefaultAdapter()
+  private val receiver = object : BroadcastReceiver() {
+    override fun onReceive(context: Context?, intent: Intent?) {
+      val action = intent?.action
+      if (
+        action == BluetoothDevice.ACTION_BOND_STATE_CHANGED || 
+        action == BluetoothAdapter.ACTION_STATE_CHANGED
+      ) sendDevices()
+    }
+  }
+
   override fun definition() = ModuleDefinition {
     Name("ExpoBluetoothPrinter")
 
     Events("onDevices")
 
-    AsyncFunction("loadDevices") {
-      val adapter = BluetoothAdapter.getDefaultAdapter()
-      val bondedDevices = adapter.getBondedDevices()
-      val devices = bondedDevices.map { device ->
-        mapOf(
-          "id" to device.address,
-          "name" to (device.name ?: "Unknown")
-        )
+    AsyncFunction("listenDevices") {
+      val context = appContext.reactContext ?: return@AsyncFunction
+      val filter = IntentFilter().apply {
+        addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+        addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
       }
-      sendEvent("onDevices", mapOf(
-        "devices" to devices
-      ))
+      context.registerReceiver(receiver, filter)
+      sendDevices()
     }
 
-    AsyncFunction("printText") { deviceID: String, text: String ->
-      val adapter = BluetoothAdapter.getDefaultAdapter()
+    AsyncFunction("unlistenDevices") {
+      val context = appContext.reactContext ?: return@AsyncFunction
+      context.unregisterReceiver(receiver)
+    }
+
+    AsyncFunction("printText") { deviceID: String, text: String, uuid: String? ->
       val device = adapter.getRemoteDevice(deviceID)
-      val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-      val socket = device.createRfcommSocketToServiceRecord(uuid)
+      val socket = device.createRfcommSocketToServiceRecord(uuid ?: UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
       try {
         socket.connect()
         val outputStream: OutputStream = socket.outputStream
@@ -46,10 +60,21 @@ class ExpoBluetoothPrinterModule : Module() {
         outputStream.flush()
       } catch (e: IOException) {
         e.printStackTrace()
-        throw IOException("Erro ao tentar imprimir via Bluetooth: ${e.message}")
+        throw IOException(e.message)
       } finally {
         socket?.close()
       }
     }
+  }
+
+  private fun sendDevices() {
+    val bondedDevices = adapter.getBondedDevices()
+    val devices = bondedDevices.map { device ->
+      mapOf(
+        "id" to device.address,
+        "name" to (device.name ?: "Unknown")
+      )
+    }
+    sendEvent("onDevices", mapOf("devices" to devices))
   }
 }
