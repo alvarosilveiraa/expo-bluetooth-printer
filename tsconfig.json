@@ -1,8 +1,21 @@
 {
-  "extends": "expo-module-scripts/tsconfig.base",
   "compilerOptions": {
-    "outDir": "build"
+    "outDir": "build",
+    "target": "ESNext",
+    "module": "CommonJS",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "jsx": "react-jsx"
   },
-  "include": ["src"],
-  "exclude": ["__mocks__", "__tests__"]
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  },
+  "include": ["src"]
 }
