@@ -5,11 +5,11 @@
   "types": "build/index.d.ts",
   "scripts": {
     "clean": "expo-module clean",
-    "build": "tsc && tsc-alias",
+    "build": "npx tsc && npx tsc-alias",
     "test": "expo-module test",
     "lint": "expo-module lint",
     "typecheck": "tsc --noEmit",
-    "preinstall": "yarn build"
+    "preinstall": "npm run build"
   },
   "keywords": [
     "react-native",
@@ -34,7 +34,6 @@
     "jest": "^29.7.0",
     "react": "18.3.1",
     "react-native": "0.76.7",
-    "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.24.0"
