@@ -7,4 +7,7 @@ const ExpoBluetoothPrinter = requireNativeModule<ExpoBluetoothPrinterModule>(
 
 export const { loadDevices, printText } = ExpoBluetoothPrinter;
 
-export const useDevices = () => useEvent(ExpoBluetoothPrinter, "onDevices");
+export const useDevices = () => {
+  const payload = useEvent(ExpoBluetoothPrinter, "onDevices");
+  return payload?.devices || [];
+};
