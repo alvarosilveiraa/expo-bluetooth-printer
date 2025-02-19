@@ -1,5 +1,8 @@
 package expo.modules.bluetoothprinter
 
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -17,39 +20,46 @@ import java.io.IOException
 import java.util.*
 
 class ExpoBluetoothPrinterModule : Module() {
+  private const val NAME = "ExpoBluetoothPrinter"
+  private const val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   private val adapter = BluetoothAdapter.getDefaultAdapter()
   private val receiver = object : BroadcastReceiver() {
-    override fun onReceive(context: Context?, intent: Intent?) {
-      val action = intent?.action
-      if (
-        action == BluetoothDevice.ACTION_BOND_STATE_CHANGED ||
-        action == BluetoothAdapter.ACTION_STATE_CHANGED
-      ) sendDevices()
+    override fun onReceive(context: Context, intent: Intent) {
+      val action = intent.getAction()
+      Log.d(NAME, "on receive: $action")
+      sendDevices()
     }
   }
 
   override fun definition() = ModuleDefinition {
-    Name("ExpoBluetoothPrinter")
+    Name(NAME)
 
     Events("onDevices")
 
+    Function("isEnabled") {
+      isEnabled()
+    }
+
     AsyncFunction("listenDevices") {
+      checkPermissions()
       val filter = IntentFilter().apply {
         addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
       }
-      appContext.reactContext?.registerReceiver(receiver, filter)
+      appContext.reactContext.registerReceiver(receiver, filter)
+      if (isEnabled()) adapter.startDiscovery()
       sendDevices()
     }
 
     AsyncFunction("unlistenDevices") {
-      appContext.reactContext?.unregisterReceiver(receiver)
+      appContext.reactContext.unregisterReceiver(receiver)
+      if (isEnabled() && adapter.isDiscovering()) adapter.cancelDiscovery()
     }
 
     AsyncFunction("printText") { deviceID: String, text: String ->
+      if (!isEnabled()) return
       val device = adapter.getRemoteDevice(deviceID)
-      val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-      val socket = device.createRfcommSocketToServiceRecord(uuid)
+      val socket = device.createRfcommSocketToServiceRecord(SOCKET_UUID)
       try {
         socket.connect()
         val outputStream: OutputStream = socket.outputStream
@@ -61,12 +71,27 @@ class ExpoBluetoothPrinterModule : Module() {
         e.printStackTrace()
         throw IOException(e.message)
       } finally {
-        socket?.close()
+        socket.close()
       }
     }
   }
 
+  private fun checkPermissions() {
+    val permissionChecked = ContextCompat.checkSelfPermission(
+      appContext.reactContext,
+      android.Manifest.permission.ACCESS_COARSE_LOCATION
+    )
+    if (permissionChecked == PackageManager.PERMISSION_DENIED) {
+      ActivityCompat.requestPermissions(
+        appContext.reactContext.getCurrentActivity(),
+        listOf(android.Manifest.permission.ACCESS_COARSE_LOCATION),
+        1
+      )
+    }
+  }
+
   private fun sendDevices() {
+    if (!isEnabled()) return
     val bondedDevices = adapter.getBondedDevices()
     val devices = bondedDevices.map { device ->
       mapOf(
@@ -76,4 +101,6 @@ class ExpoBluetoothPrinterModule : Module() {
     }
     sendEvent("onDevices", mapOf("devices" to devices))
   }
+
+  private fun isEnabled() = adapter != null && adapter.isEnabled()
 }
