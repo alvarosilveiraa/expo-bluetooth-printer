@@ -20,8 +20,8 @@ import java.io.IOException
 import java.util.*
 
 class ExpoBluetoothPrinterModule : Module() {
-  private const val NAME = "ExpoBluetoothPrinter"
-  private const val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+  private val NAME = "ExpoBluetoothPrinter"
+  private val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   private val adapter = BluetoothAdapter.getDefaultAdapter()
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
