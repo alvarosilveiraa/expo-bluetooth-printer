@@ -1,7 +1,7 @@
 apply plugin: 'com.android.library'
 
 group = 'expo.modules.bluetoothprinter'
-version = '0.1.1'
+version = '0.1.2'
 
 def expoModulesCorePlugin = new File(project(":expo-modules-core").projectDir.absolutePath, "ExpoModulesCorePlugin.gradle")
 apply from: expoModulesCorePlugin
@@ -29,11 +29,21 @@ if (useManagedAndroidSdkVersions) {
 
 android {
   namespace "expo.modules.bluetoothprinter"
+
   defaultConfig {
     versionCode 1
-    versionName "0.1.1"
+    versionName "0.1.2"
+
+    manifestPlaceholders += [
+      bluetoothPermission: "true"
+    ]
   }
+
   lintOptions {
     abortOnError false
   }
+}
+
+dependencies {
+  implementation "androidx.core:core-ktx:1.10.1"
 }

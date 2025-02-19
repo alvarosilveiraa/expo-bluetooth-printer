@@ -1,7 +1,6 @@
 import { NativeModule } from "expo";
 
 export declare class ExpoBluetoothPrinterModule extends NativeModule {
-  PI: number;
-  hello(): string;
-  setValueAsync(value: string): Promise<void>;
+  getDevices(): Promise<{ id: string; name: string }[]>;
+  printText(deviceID: string, text: string): Promise<void>;
 }
