@@ -22,7 +22,7 @@ class ExpoBluetoothPrinterModule : Module() {
     override fun onReceive(context: Context?, intent: Intent?) {
       val action = intent?.action
       if (
-        action == BluetoothDevice.ACTION_BOND_STATE_CHANGED || 
+        action == BluetoothDevice.ACTION_BOND_STATE_CHANGED ||
         action == BluetoothAdapter.ACTION_STATE_CHANGED
       ) sendDevices()
     }
@@ -34,23 +34,22 @@ class ExpoBluetoothPrinterModule : Module() {
     Events("onDevices")
 
     AsyncFunction("listenDevices") {
-      val context = appContext.reactContext ?: return@AsyncFunction
       val filter = IntentFilter().apply {
         addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
       }
-      context.registerReceiver(receiver, filter)
+      appContext.reactContext?.registerReceiver(receiver, filter)
       sendDevices()
     }
 
     AsyncFunction("unlistenDevices") {
-      val context = appContext.reactContext ?: return@AsyncFunction
-      context.unregisterReceiver(receiver)
+      appContext.reactContext?.unregisterReceiver(receiver)
     }
 
-    AsyncFunction("printText") { deviceID: String, text: String, uuid: String? ->
+    AsyncFunction("printText") { deviceID: String, text: String ->
       val device = adapter.getRemoteDevice(deviceID)
-      val socket = device.createRfcommSocketToServiceRecord(uuid ?: UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
+      val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+      val socket = device.createRfcommSocketToServiceRecord(uuid)
       try {
         socket.connect()
         val outputStream: OutputStream = socket.outputStream
