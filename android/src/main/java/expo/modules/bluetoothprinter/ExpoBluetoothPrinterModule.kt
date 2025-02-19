@@ -27,33 +27,30 @@ class ExpoBluetoothPrinterModule : Module() {
     }
 
     AsyncFunction("printText") { deviceId: String, text: String ->
-      withContext(Dispatchers.IO) {
-        val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        val device = bluetoothAdapter.getRemoteDevice(deviceId)
-        val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB") // UUID para Bluetooth SPP
-        var socket: BluetoothSocket? = null
-        try {
-          socket = device.createRfcommSocketToServiceRecord(uuid)
-          socket.connect()
-          val outputStream: OutputStream = socket.outputStream
+      val bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
+      val device = bluetoothAdapter.getRemoteDevice(deviceId)
+      val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB") // UUID para Bluetooth SPP
+      var socket: BluetoothSocket? = null
+      try {
+        socket = device.createRfcommSocketToServiceRecord(uuid)
+        socket.connect()
+        val outputStream: OutputStream = socket.outputStream
 
-          // Início do comando ESC/POS
-          val resetCommand = byteArrayOf(0x1B, 0x40) // Reseta impressora
-          outputStream.write(resetCommand)
+        // Reseta impressora
+        outputStream.write(byteArrayOf(0x1B, 0x40))
 
-          val textToPrint = "$text\n\n\n"
-          outputStream.write(textToPrint.toByteArray(charset("UTF-8")))
+        // Envia texto para impressao
+        outputStream.write("$text\n\n\n".toByteArray(Charsets.UTF_8))
 
-          // Comando para corte de papel (opcional, dependendo da impressora)
-          val cutCommand = byteArrayOf(0x1D, 0x56, 0x41, 0x10)
-          outputStream.write(cutCommand)
+        // Comando para corte de papel (opcional, dependendo da impressora)
+        outputStream.write(byteArrayOf(0x1D, 0x56, 0x41, 0x10))
 
-          outputStream.flush()
-        } catch (e: IOException) {
-          e.printStackTrace()
-        } finally {
-          socket?.close()
-        }
+        outputStream.flush()
+      } catch (e: IOException) {
+        e.printStackTrace()
+        throw IOException("Erro ao tentar imprimir via Bluetooth: ${e.message}")
+      } finally {
+        socket?.close()
       }
     }
   }
