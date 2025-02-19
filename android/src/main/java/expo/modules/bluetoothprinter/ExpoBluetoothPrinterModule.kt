@@ -27,9 +27,9 @@ class ExpoBluetoothPrinterModule : Module() {
           "name" to (device.name ?: "Unknown")
         )
       }
-      sendEvent("onDevices", [
-        "devices": devices
-      ])
+      sendEvent("onDevices", mapOf(
+        "devices" to devices
+      ))
     }
 
     AsyncFunction("printText") { deviceID: String, text: String ->
