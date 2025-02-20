@@ -1,2 +1,2 @@
-export * from "./ExpoBluetoothPrinter";
+export * from "./BluetoothPrinter";
 export * from "./useBluetoothPrinter";

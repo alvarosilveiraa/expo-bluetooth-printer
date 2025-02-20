@@ -1,11 +1,10 @@
 {
   "name": "expo-bluetooth-printer",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
-    "clean": "expo-module clean",
-    "build": "npx tsc && npx tsc-alias",
+    "build": "rm -rf build && npx tsc && npx tsc-alias",
     "test": "expo-module test",
     "lint": "expo-module lint",
     "typecheck": "tsc --noEmit",
