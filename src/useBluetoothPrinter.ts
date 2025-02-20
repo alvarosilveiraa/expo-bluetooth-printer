@@ -8,17 +8,18 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   const isLoading = useMemo(() => !event, [event]);
   const isEnabled = useMemo(() => BluetoothPrinter.isEnabled(), []);
 
-  useEffect(() => {
-    BluetoothPrinter.checkPermissions();
+  const listenDevices = useCallback(async () => {
+    await BluetoothPrinter.checkPermissions();
+    BluetoothPrinter.listenDevices();
   }, []);
 
   useEffect(() => {
     if (!isEnabled) return;
-    BluetoothPrinter.listenDevices();
+    listenDevices();
     return () => {
       BluetoothPrinter.unlistenDevices();
     };
-  }, [isEnabled]);
+  }, []);
 
   const printText = useCallback(
     async (text: string) => {

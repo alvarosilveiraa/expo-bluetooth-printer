@@ -45,19 +45,13 @@ class BluetoothPrinterModule : Module() {
 
     AsyncFunction("checkPermissions") Coroutine { ->
       Log.d(NAME, "checkPermissions")
-      if (
-        ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
-        ActivityCompat.checkSelfPermission(mContext, Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
-        ActivityCompat.checkSelfPermission(mContext, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
-      ) {
-        val permissionsManager = appContext.permissions ?: throw NoPermissionsModuleException()
-        return@Coroutine BluetoothPrinterHelpers.askForPermissions(
-          permissionsManager,
-          Manifest.permission.BLUETOOTH_CONNECT,
-          Manifest.permission.BLUETOOTH_SCAN,
-          Manifest.permission.ACCESS_FINE_LOCATION
-        )
-      }
+      val permissionsManager = appContext.permissions ?: throw NoPermissionsModuleException()
+      return@Coroutine BluetoothPrinterHelpers.askForPermissions(
+        permissionsManager,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.ACCESS_FINE_LOCATION
+      )
     }
 
     AsyncFunction("listenDevices") {
