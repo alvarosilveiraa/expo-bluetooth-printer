@@ -1,6 +1,8 @@
 package expo.modules.bluetoothprinter
 
 import expo.modules.kotlin.exception.Exceptions
+import expo.modules.kotlin.functions.Coroutine
+import androidx.core.app.ActivityCompat
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothSocket
@@ -9,6 +11,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
+import android.Manifest
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import kotlinx.coroutines.Dispatchers
@@ -20,6 +23,7 @@ import java.util.*
 class BluetoothPrinterModule : Module() {
   private lateinit var mContext: Context
   private lateinit var mAdapter: BluetoothAdapter
+  private val NAME = "ExpoBluetoothPrinter"
   private val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -29,7 +33,7 @@ class BluetoothPrinterModule : Module() {
   }
 
   override fun definition() = ModuleDefinition {
-    Name("ExpoBluetoothPrinter")
+    Name(NAME)
 
     OnCreate {
       mContext = appContext.reactContext ?: throw Exceptions.ReactContextLost()
@@ -39,6 +43,8 @@ class BluetoothPrinterModule : Module() {
     Events("onDevices")
 
     AsyncFunction("listenDevices") {
+      Log.d(NAME, "listenDevices")
+      checkPermissions()
       val filter = IntentFilter().apply {
         addAction(BluetoothDevice.ACTION_FOUND)
       }
@@ -48,6 +54,7 @@ class BluetoothPrinterModule : Module() {
     }
 
     AsyncFunction("unlistenDevices") {
+      Log.d(NAME, "unlistenDevices")
       mContext.unregisterReceiver(receiver)
       mAdapter.cancelDiscovery()
     }
@@ -87,5 +94,21 @@ class BluetoothPrinterModule : Module() {
       )
     }
     sendEvent("onDevices", mapOf("devices" to devices))
+  }
+
+  private fun checkPermissions() {
+    if (
+      ActivityCompat.checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED ||
+      ActivityCompat.checkSelfPermission(Manifest.permission.BLUETOOTH_SCAN) != PackageManager.PERMISSION_GRANTED ||
+      ActivityCompat.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+    ) {
+      val permissionsManager = appContext.permissions ?: throw NoPermissionsModuleException()
+      BluetoothPrinterHelpers.askForPermissions(
+        permissionsManager,
+        Manifest.permission.BLUETOOTH_CONNECT,
+        Manifest.permission.BLUETOOTH_SCAN,
+        Manifest.permission.ACCESS_FINE_LOCATION
+      )
+    }
   }
 }
