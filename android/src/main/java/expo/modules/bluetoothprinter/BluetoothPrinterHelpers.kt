@@ -1,3 +1,5 @@
+package expo.modules.bluetoothprinter
+
 import android.os.Bundle
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
