@@ -9,6 +9,10 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   const isEnabled = useMemo(() => BluetoothPrinter.isEnabled(), []);
 
   useEffect(() => {
+    BluetoothPrinter.checkPermissions();
+  }, []);
+
+  useEffect(() => {
     if (!isEnabled) return;
     BluetoothPrinter.listenDevices();
     return () => {
