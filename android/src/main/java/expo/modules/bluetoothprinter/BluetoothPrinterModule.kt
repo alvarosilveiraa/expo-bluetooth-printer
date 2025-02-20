@@ -20,7 +20,7 @@ import java.util.*
 class BluetoothPrinterModule : Module() {
   private lateinit var mContext: Context
   private lateinit var mAdapter: BluetoothAdapter
-
+  private val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
       if (BluetoothDevice.ACTION_FOUND.equals(intent.action))
@@ -33,7 +33,7 @@ class BluetoothPrinterModule : Module() {
 
     OnCreate {
       mContext = appContext.reactContext ?: throw Exceptions.ReactContextLost()
-      mAdapter = BluetoothAdapter.getDefaultAdapter() ?: throw NoBluetoothAdapterException
+      mAdapter = BluetoothAdapter.getDefaultAdapter() ?: throw NoBluetoothAdapterException()
     }
 
     Events("onDevices")
@@ -87,9 +87,5 @@ class BluetoothPrinterModule : Module() {
       )
     }
     sendEvent("onDevices", mapOf("devices" to devices))
-  }
-
-  companion object {
-    private const val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   }
 }

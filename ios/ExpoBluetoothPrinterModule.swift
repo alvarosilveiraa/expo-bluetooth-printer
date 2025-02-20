@@ -1,6 +1,6 @@
 import ExpoModulesCore
 
-public class ExpoBluetoothPrinterModule: Module {
+public class BluetoothPrinterModule: Module {
   public func definition() -> ModuleDefinition {
     Name("ExpoBluetoothPrinter")
 
@@ -11,5 +11,7 @@ public class ExpoBluetoothPrinterModule: Module {
     AsyncFunction("unlistenDevices")
 
     AsyncFunction("printText")
+
+    Function("isEnabled")
   }
 }
