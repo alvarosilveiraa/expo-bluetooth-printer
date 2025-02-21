@@ -13,3 +13,5 @@ export const BluetoothPrinterProvider = ({
     </BluetoothPrinterContext.Provider>
   );
 };
+
+export * from "./hook";
