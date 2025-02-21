@@ -5,6 +5,6 @@ export type BluetoothPrinterContextValue = {
   }[];
   isLoading: boolean;
   isEnabled: boolean;
-  print: (byteArrayList: Uint8Array[][]) => Promise<void>;
-  printPdf: (fileUri: string) => Promise<void>;
+  print: (byteArrayList: Uint8Array[][], count?: number) => Promise<void>;
+  printPdf: (fileUri: string, count?: number) => Promise<void>;
 };
