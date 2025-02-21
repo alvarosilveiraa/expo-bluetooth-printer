@@ -2,10 +2,8 @@ package expo.modules.bluetoothprinter
 
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.functions.Coroutine
-import androidx.core.app.ActivityCompat
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
-import android.content.pm.PackageManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -14,17 +12,10 @@ import android.util.Log
 import android.Manifest
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.OutputStream
-import java.io.IOException
-import java.util.*
 
 class BluetoothPrinterModule : Module() {
   private lateinit var mContext: Context
   private lateinit var mAdapter: BluetoothAdapter
-  private val MODULE_NAME = "ExpoBluetoothPrinter"
-  private val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
   private val service = BluetoothPrinterService()
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -34,7 +25,7 @@ class BluetoothPrinterModule : Module() {
   }
 
   override fun definition() = ModuleDefinition {
-    Name(MODULE_NAME)
+    Name(BluetoothPrinterConstants.MODULE_NAME)
 
     OnCreate {
       mContext = appContext.reactContext ?: throw Exceptions.ReactContextLost()
@@ -44,7 +35,7 @@ class BluetoothPrinterModule : Module() {
     Events("onDevices")
 
     AsyncFunction("checkPermissions") Coroutine { ->
-      Log.d(MODULE_NAME, "checkPermissions")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "checkPermissions")
       val permissionsManager = appContext.permissions ?: throw NoPermissionsModuleException()
       return@Coroutine BluetoothPrinterHelpers.askForPermissions(
         permissionsManager,
@@ -55,7 +46,7 @@ class BluetoothPrinterModule : Module() {
     }
 
     AsyncFunction("listenDevices") {
-      Log.d(MODULE_NAME, "listenDevices")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "listenDevices")
       val filter = IntentFilter().apply {
         addAction(BluetoothDevice.ACTION_FOUND)
       }
@@ -65,35 +56,35 @@ class BluetoothPrinterModule : Module() {
     }
 
     AsyncFunction("unlistenDevices") {
-      Log.d(MODULE_NAME, "unlistenDevices")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "unlistenDevices")
       mContext.unregisterReceiver(receiver)
       mAdapter.cancelDiscovery()
     }
 
     AsyncFunction("connectDevice") { id: String ->
-      Log.d(MODULE_NAME, "connectDevice")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "connectDevice")
       val device = mAdapter.getRemoteDevice(id)
-      val socket = device.createRfcommSocketToServiceRecord(SOCKET_UUID)
+      val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
       service.connect(socket)
     }
 
     AsyncFunction("closeDevice") {
-      Log.d(MODULE_NAME, "closeDevice")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "closeDevice")
       service.close()
     }
 
     AsyncFunction("print") { byteArrayList: List<ByteArray>, count: Int? ->
-      Log.d(MODULE_NAME, "print")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "print")
       service.print(byteArrayList, count)
     }
 
     AsyncFunction("printPdf") { fileUri: String, count: Int? ->
-      Log.d(MODULE_NAME, "printPdf")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "printPdf")
       service.printPdf(fileUri, count)
     }
 
     Function("isEnabled") {
-      Log.d(MODULE_NAME, "isEnabled")
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "isEnabled")
       mAdapter.isEnabled()
     }
   }

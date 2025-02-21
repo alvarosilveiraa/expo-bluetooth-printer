@@ -1,9 +1,7 @@
 package expo.modules.bluetoothprinter
 
-import android.graphics.Bitmap
 import android.bluetooth.BluetoothSocket
-import java.io.File
-import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 class BluetoothPrinterService {
   private var mSocket: BluetoothSocket? = null
@@ -23,25 +21,22 @@ class BluetoothPrinterService {
     val socket = mSocket ?: return
     val iterations = count ?: 1
     if (iterations <= 0) return
-    repeat(iterations) {
-      socket.outputStream.write(BluetoothPrinterCommands.RESET)
-      byteArrayList.forEach { socket.outputStream.write(it) }
-      socket.outputStream.write(BluetoothPrinterCommands.CUT)
-      socket.outputStream.flush()
+    try {
+      repeat(iterations) {
+        socket.outputStream.write(BluetoothPrinterCommands.RESET)
+        byteArrayList.forEach { socket.outputStream.write(it) }
+        socket.outputStream.write(BluetoothPrinterCommands.CUT)
+        socket.outputStream.flush()
+      }
+    } catch (e: IOException) {
+      Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing!", e)
+      throw e
     }
   }
 
-  public fun printPdf(fileUri: String, count: Int?) {
-    val file = File(fileUri)
-    val bitmaps = BluetoothPrinterHelpers.convertPdfToBitmaps(file)
-    val byteArrayList = mutableListOf<ByteArray>()
-    bitmaps.forEach {
-      val byteArrayOutputStream = ByteArrayOutputStream()
-      it.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream)
-      val byteArray = byteArrayOutputStream.toByteArray()
-      byteArrayList.add(byteArray)
-      it.recycle()
-    }
+  public fun printPdf(uri: String, count: Int?) {
+    val file = BluetoothPrinterHelpers.convertUriToFile(uri)
+    val byteArrayList = BluetoothPrinterHelpers.convertPdfToByteArrayList(file)
     print(byteArrayList, count)
   }
 }
