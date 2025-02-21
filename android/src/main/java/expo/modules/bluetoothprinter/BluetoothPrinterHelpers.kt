@@ -14,23 +14,23 @@ import java.io.File
 import java.io.FileOutputStream
 
 class BluetoothPrinterHelpers {
-  public fun convertPdfToBitmaps(file: File): List<Bitmap> {
-    val bitmaps = mutableListOf<Bitmap>()
-    val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-    val pdfRenderer = PdfRenderer(fileDescriptor)
-    for (i in 0 until pdfRenderer.pageCount) {
-      val page = pdfRenderer.openPage(i)
-      val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
-      page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-      bitmaps.add(bitmap)
-      page.close()
-    }
-    pdfRenderer.close()
-    fileDescriptor.close()
-    return bitmaps
-  }
-
   companion object {
+    internal fun convertPdfToBitmaps(file: File): List<Bitmap> {
+      val bitmaps = mutableListOf<Bitmap>()
+      val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+      val pdfRenderer = PdfRenderer(fileDescriptor)
+      for (i in 0 until pdfRenderer.pageCount) {
+        val page = pdfRenderer.openPage(i)
+        val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+        page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+        bitmaps.add(bitmap)
+        page.close()
+      }
+      pdfRenderer.close()
+      fileDescriptor.close()
+      return bitmaps
+    }
+
     internal suspend fun askForPermissions(manager: Permissions, vararg args: String): Bundle {
       return suspendCoroutine {
         Permissions.askForPermissionsWithPermissionsManager(

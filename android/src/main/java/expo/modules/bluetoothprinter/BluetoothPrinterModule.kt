@@ -25,6 +25,7 @@ class BluetoothPrinterModule : Module() {
   private lateinit var mAdapter: BluetoothAdapter
   private val MODULE_NAME = "ExpoBluetoothPrinter"
   private val SOCKET_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+  private val service = BluetoothPrinterService()
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
       if (BluetoothDevice.ACTION_FOUND.equals(intent.action))
@@ -73,22 +74,22 @@ class BluetoothPrinterModule : Module() {
       Log.d(MODULE_NAME, "connectDevice")
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(SOCKET_UUID)
-      BluetoothPrinterService.connect(socket)
+      service.connect(socket)
     }
 
     AsyncFunction("closeDevice") {
       Log.d(MODULE_NAME, "closeDevice")
-      BluetoothPrinterService.close()
+      service.close()
     }
 
     AsyncFunction("print") { byteArrayList: List<ByteArray> ->
       Log.d(MODULE_NAME, "print")
-      BluetoothPrinterService.print(byteArrayList)
+      service.print(byteArrayList)
     }
 
     AsyncFunction("printPdf") { fileUri: String ->
       Log.d(MODULE_NAME, "printPdf")
-      BluetoothPrinterService.printPdf(fileUri)
+      service.printPdf(fileUri)
     }
 
     Function("isEnabled") {

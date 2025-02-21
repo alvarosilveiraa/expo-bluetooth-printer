@@ -1,28 +1,30 @@
 package expo.modules.bluetoothprinter
 
+import android.graphics.Bitmap
 import android.bluetooth.BluetoothSocket
 import java.io.File
+import java.io.ByteArrayOutputStream
 
 class BluetoothPrinterService {
   private var mSocket: BluetoothSocket? = null
 
   public fun connect(socket: BluetoothSocket) {
+    socket.connect()
     mSocket = socket
-    mSocket.connect()
   }
 
   public fun close() {
-    if (mSocket == null) return
-    mSocket.close()
+    val socket = mSocket ?: return
+    socket.close()
     mSocket = null
   }
 
   public fun print(byteArrayList: List<ByteArray>) {
-    if (mSocket == null) return
-    mSocket.outputStream.write(BluetoothPrinterCommands.RESET)
-    byteArrayList.forEach { mSocket.outputStream.write(it) }
-    mSocket.outputStream.write(BluetoothPrinterCommands.CUT)
-    mSocket.outputStream.flush()
+    val socket = mSocket ?: return
+    socket.outputStream.write(BluetoothPrinterCommands.RESET)
+    byteArrayList.forEach { socket.outputStream.write(it) }
+    socket.outputStream.write(BluetoothPrinterCommands.CUT)
+    socket.outputStream.flush()
   }
 
   public fun printPdf(fileUri: String) {
