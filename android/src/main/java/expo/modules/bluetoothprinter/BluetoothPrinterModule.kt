@@ -82,14 +82,14 @@ class BluetoothPrinterModule : Module() {
       service.close()
     }
 
-    AsyncFunction("print") { byteArrayList: List<ByteArray> ->
+    AsyncFunction("print") { byteArrayList: List<ByteArray>, count: Int? ->
       Log.d(MODULE_NAME, "print")
-      service.print(byteArrayList)
+      service.print(byteArrayList, count)
     }
 
-    AsyncFunction("printPdf") { fileUri: String ->
+    AsyncFunction("printPdf") { fileUri: String, count: Int? ->
       Log.d(MODULE_NAME, "printPdf")
-      service.printPdf(fileUri)
+      service.printPdf(fileUri, count)
     }
 
     Function("isEnabled") {

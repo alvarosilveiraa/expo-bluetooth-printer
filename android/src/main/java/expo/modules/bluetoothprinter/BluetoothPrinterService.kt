@@ -19,15 +19,19 @@ class BluetoothPrinterService {
     mSocket = null
   }
 
-  public fun print(byteArrayList: List<ByteArray>) {
+  public fun print(byteArrayList: List<ByteArray>, count: Int?) {
     val socket = mSocket ?: return
-    socket.outputStream.write(BluetoothPrinterCommands.RESET)
-    byteArrayList.forEach { socket.outputStream.write(it) }
-    socket.outputStream.write(BluetoothPrinterCommands.CUT)
-    socket.outputStream.flush()
+    val iterations = count ?: 1
+    if (iterations <= 0) return
+    repeat(iterations) {
+      socket.outputStream.write(BluetoothPrinterCommands.RESET)
+      byteArrayList.forEach { socket.outputStream.write(it) }
+      socket.outputStream.write(BluetoothPrinterCommands.CUT)
+      socket.outputStream.flush()
+    }
   }
 
-  public fun printPdf(fileUri: String) {
+  public fun printPdf(fileUri: String, count: Int?) {
     val file = File(fileUri)
     val bitmaps = BluetoothPrinterHelpers.convertPdfToBitmaps(file)
     val byteArrayList = mutableListOf<ByteArray>()
@@ -38,6 +42,6 @@ class BluetoothPrinterService {
       byteArrayList.add(byteArray)
       it.recycle()
     }
-    print(byteArrayList)
+    print(byteArrayList, count)
   }
 }
