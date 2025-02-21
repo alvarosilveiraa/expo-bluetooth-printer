@@ -21,21 +21,24 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     };
   }, []);
 
-  const printText = useCallback(
-    async (text: string) => {
-      const device = devices.find(
-        ({ name }) => !deviceName || deviceName === name
-      );
-      if (!isEnabled || !device) return;
-      await BluetoothPrinter.printText(device.id, text);
-    },
-    [deviceName, devices, isEnabled]
-  );
+  useEffect(() => {
+    if (!isEnabled || !devices.length) return;
+    const device = devices.find(
+      ({ name }) => !deviceName || deviceName === name
+    );
+    if (device) {
+      BluetoothPrinter.connectDevice(device.id);
+      return () => {
+        BluetoothPrinter.closeDevice();
+      };
+    }
+  }, [deviceName, devices]);
 
   return {
     devices,
     isLoading,
     isEnabled,
-    printText,
+    print: BluetoothPrinter.print,
+    printPdf: BluetoothPrinter.printPdf,
   };
 };

@@ -6,11 +6,19 @@ public class BluetoothPrinterModule: Module {
 
     Events("onDevices")
 
+    AsyncFunction("checkPermissions")
+
     AsyncFunction("listenDevices")
 
     AsyncFunction("unlistenDevices")
 
-    AsyncFunction("printText")
+    AsyncFunction("connectDevice")
+
+    AsyncFunction("closeDevice")
+
+    AsyncFunction("print")
+
+    AsyncFunction("printPdf")
 
     Function("isEnabled")
   }
