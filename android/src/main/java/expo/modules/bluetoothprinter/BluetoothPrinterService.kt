@@ -41,7 +41,8 @@ class BluetoothPrinterService {
     val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
     val resized = BluetoothPrinterHelpers.resizeBitmap(bitmap, 576)
     val byteArrayList = mutableListOf<ByteArray>()
-    byteArrayList.add(BluetoothPrinterHelpers.convertBitmapToByteArray(resized))
+    val bitmapByteArray = BluetoothPrinterHelpers.convertBitmapToByteArray(resized)
+    byteArrayList.add(bitmapByteArray)
     byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
     printByteArrayList(byteArrayList)
   }

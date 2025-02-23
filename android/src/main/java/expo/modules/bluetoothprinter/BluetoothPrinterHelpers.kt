@@ -2,6 +2,7 @@ package expo.modules.bluetoothprinter
 
 import android.os.Bundle
 import android.graphics.Bitmap
+import android.util.Log
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
@@ -22,12 +23,17 @@ class BluetoothPrinterHelpers {
       val baos = ByteArrayOutputStream()
       val width = bitmap.width
       val height = bitmap.height
-      val data = ByteArray((width * height / 8) + 8)
+      val bytesPerRow = (width + 7) / 8
+      val totalRows = (height + 23) / 24
+      val dataSize = 5 + (totalRows * (bytesPerRow * 24 + 1))
+
+      val data = ByteArray(dataSize)
       data[0] = 0x1B
       data[1] = 0x2A
       data[2] = 33
       data[3] = (width % 256).toByte()
       data[4] = (width / 256).toByte()
+
       var index = 5
       for (y in 0 until height step 24) {
         for (x in 0 until width) {
@@ -39,13 +45,25 @@ class BluetoothPrinterHelpers {
               if (gray < 128) byte = byte or (1 shl (7 - bit % 8))
             }
             if (bit % 8 == 7) {
-              data[index++] = byte.toByte()
+              if (index < data.size) {
+                data[index++] = byte.toByte()
+              } else {
+                Log.e(BluetoothPrinterConstants.MODULE_NAME, "Index out of bounds: $index / ${data.size}")
+                return data.copyOf(index)
+              }
               byte = 0
             }
           }
         }
-        data[index++] = 0x0A
+        if (index < data.size) {
+          data[index++] = 0x0A
+        } else {
+          Log.e(BluetoothPrinterConstants.MODULE_NAME, "Index out of bounds at line break: $index / ${data.size}")
+          return data.copyOf(index)
+        }
       }
+
+      baos.write(data, 0, index)
       return baos.toByteArray()
     }
 
