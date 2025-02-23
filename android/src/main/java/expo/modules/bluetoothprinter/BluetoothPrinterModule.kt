@@ -12,6 +12,7 @@ import android.util.Log
 import android.Manifest
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import expo.modules.bluetoothprinter.data.BluetoothPrinterValue
 
 class BluetoothPrinterModule : Module() {
   private lateinit var mContext: Context
@@ -73,14 +74,9 @@ class BluetoothPrinterModule : Module() {
       service.close()
     }
 
-    AsyncFunction("print") { byteArrayList: List<ByteArray>, count: Int? ->
+    AsyncFunction("print") { values: List<BluetoothPrinterValue>, count: Int? ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "print")
-      service.print(byteArrayList, count)
-    }
-
-    AsyncFunction("printPdf") { fileUri: String, count: Int? ->
-      Log.d(BluetoothPrinterConstants.MODULE_NAME, "printPdf")
-      service.printPdf(fileUri, count)
+      service.print(values, count)
     }
 
     Function("isEnabled") {

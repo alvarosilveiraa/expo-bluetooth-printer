@@ -1,3 +1,5 @@
+import { BluetoothPrinterValue } from "../data/BluetoothPrinterValue";
+
 export type BluetoothPrinterContextValue = {
   devices: {
     id: string;
@@ -5,6 +7,5 @@ export type BluetoothPrinterContextValue = {
   }[];
   isLoading: boolean;
   isEnabled: boolean;
-  print: (byteArrayList: Uint8Array[][], count?: number) => Promise<void>;
-  printPdf: (fileUri: string, count?: number) => Promise<void>;
+  print: (values: BluetoothPrinterValue[], count?: number) => Promise<void>;
 };

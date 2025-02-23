@@ -39,6 +39,5 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     isLoading,
     isEnabled,
     print: BluetoothPrinter.print,
-    printPdf: BluetoothPrinter.printPdf,
   };
 };

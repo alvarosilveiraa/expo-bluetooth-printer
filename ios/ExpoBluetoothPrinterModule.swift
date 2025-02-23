@@ -18,8 +18,6 @@ public class BluetoothPrinterModule: Module {
 
     AsyncFunction("print")
 
-    AsyncFunction("printPdf")
-
     Function("isEnabled")
   }
 }
