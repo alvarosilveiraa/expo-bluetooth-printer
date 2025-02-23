@@ -54,18 +54,18 @@ class BluetoothPrinterService {
       isBold = options?.isBold,
       isUnderline = options?.isUnderline,
     )
-    when (validOptions.align) {
+    when (validOptions.align!!) {
       "center" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_CENTER)
       "right" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_RIGHT)
       else -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_LEFT)
     }
-    when (validOptions.fontSize) {
+    when (validOptions.fontSize!!) {
       2 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_2)
       3 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_3)
       else -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_1)
     }
-    if (validOptions.isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
-    if (validOptions.isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
+    if (validOptions.isBold!!) byteArrayList.add(BluetoothPrinterCommands.BOLD)
+    if (validOptions.isUnderline!!) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
     byteArrayList.add(text.toByteArray(Charsets.UTF_8))
     byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
     byteArrayList.add(BluetoothPrinterCommands.RESET)
