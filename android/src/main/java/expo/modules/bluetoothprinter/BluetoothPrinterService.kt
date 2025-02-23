@@ -26,11 +26,11 @@ class BluetoothPrinterService {
     mSocket = null
   }
 
-  public fun print(values: List<BluetoothPrinterValue>, count: Int? = 1) {
-    repeat(count) {
-      values.forEach {
-        if (it.image != null) printImage(it.image)
-        else if (it.text != null) printText(it.text.value, it.text.options)
+  public fun print(values: List<BluetoothPrinterValue>, count: Int?) {
+    repeat(count ?: 1) {
+      values.forEach { value ->
+        if (value.image != null) printImage(value.image)
+        else if (value.text != null) printText(value.text.value, value.text.options)
       }
       printByteArrayList(listOf(BluetoothPrinterCommands.CUT))
     }

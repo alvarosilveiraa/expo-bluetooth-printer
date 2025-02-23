@@ -1,8 +1,8 @@
 package expo.modules.bluetoothprinter.data
 
 data class BluetoothPrinterTextOptions(
-  align: String? = "left",
-  fontSize: Int? = 1,
-  isBold: Boolean = false,
-  isUnderline: Boolean = false,
+  val align: String? = "left",
+  val fontSize: Int? = 1,
+  val isBold: Boolean = false,
+  val isUnderline: Boolean = false,
 )

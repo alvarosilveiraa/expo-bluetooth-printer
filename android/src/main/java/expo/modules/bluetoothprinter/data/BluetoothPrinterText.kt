@@ -1,6 +1,6 @@
 package expo.modules.bluetoothprinter.data
 
 data class BluetoothPrinterText(
-  value: String,
-  options: BluetoothPrinterTextOptions?,
+  val value: String,
+  val options: BluetoothPrinterTextOptions?,
 )
