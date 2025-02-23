@@ -1,6 +1,7 @@
 import { useEvent } from "expo";
 import { useCallback, useEffect, useMemo } from "react";
 import { BluetoothPrinter } from "./BluetoothPrinter";
+import { BluetoothPrinterValue } from "./data/BluetoothPrinterValue";
 
 export const useBluetoothPrinter = (deviceName?: string) => {
   const event = useEvent(BluetoothPrinter, "onDevices");
@@ -34,10 +35,16 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     }
   }, [deviceName, devices]);
 
+  const print = useCallback(
+    (values: BluetoothPrinterValue[]) =>
+      BluetoothPrinter.print(JSON.stringify(values)),
+    []
+  );
+
   return {
     devices,
     isLoading,
     isEnabled,
-    print: BluetoothPrinter.print,
+    print,
   };
 };

@@ -77,7 +77,7 @@ class BluetoothPrinterModule : Module() {
       service.close()
     }
 
-    AsyncFunction("print") { valuesString: List<BluetoothPrinterValue>, count: Int? ->
+    AsyncFunction("print") { valuesString: String, count: Int? ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "print")
       val values: List<BluetoothPrinterValue> = Json.decodeFromString(valuesString)
       service.print(values, count)
