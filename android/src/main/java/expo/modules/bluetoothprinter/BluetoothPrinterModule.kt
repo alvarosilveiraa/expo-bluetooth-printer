@@ -13,6 +13,9 @@ import android.Manifest
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.bluetoothprinter.data.BluetoothPrinterValue
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 class BluetoothPrinterModule : Module() {
   private lateinit var mContext: Context
@@ -74,8 +77,9 @@ class BluetoothPrinterModule : Module() {
       service.close()
     }
 
-    AsyncFunction("print") { values: List<BluetoothPrinterValue>, count: Int? ->
+    AsyncFunction("print") { valuesString: List<BluetoothPrinterValue>, count: Int? ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "print")
+      val values: List<BluetoothPrinterValue> = Json.decodeFromString(valuesString)
       service.print(values, count)
     }
 
