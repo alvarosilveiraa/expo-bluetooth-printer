@@ -6,8 +6,7 @@ declare class BluetoothPrinterModule extends NativeModule<{
   checkPermissions(): Promise<void>;
   listenDevices(): Promise<void>;
   unlistenDevices(): Promise<void>;
-  connectDevice(id: string): Promise<void>;
-  closeDevice(): Promise<void>;
+  connect(id: string): Promise<void>;
   print(valuesString: string, count?: number): Promise<void>;
   isEnabled(): boolean;
   isConnected(): boolean;

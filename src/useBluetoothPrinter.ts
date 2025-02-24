@@ -34,10 +34,7 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   useEffect(() => {
     if (!isMounted || !device || !isEnabled || BluetoothPrinter.isConnected())
       return;
-    BluetoothPrinter.connectDevice(device.id);
-    return () => {
-      BluetoothPrinter.closeDevice();
-    };
+    BluetoothPrinter.connect(device.id);
   }, [deviceName, isMounted, device, isEnabled]);
 
   const print = useCallback(

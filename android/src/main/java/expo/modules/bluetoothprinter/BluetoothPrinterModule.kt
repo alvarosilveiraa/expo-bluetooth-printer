@@ -21,15 +21,8 @@ class BluetoothPrinterModule : Module() {
   private val service = BluetoothPrinterService()
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-      if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED == intent.action) {
-        val devices = mAdapter.bondedDevices.map { device ->
-          mapOf(
-            "id" to device.address,
-            "name" to (device.name ?: "Unknown")
-          )
-        }
-        sendEvent("onDevices", mapOf("devices" to devices))
-      }
+      if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED == intent.action)
+        sendDevices()
     }
   }
 
@@ -61,6 +54,7 @@ class BluetoothPrinterModule : Module() {
       }
       mContext.registerReceiver(receiver, filter)
       mAdapter.startDiscovery()
+      sendDevices()
     }
 
     AsyncFunction("unlistenDevices") {
@@ -69,17 +63,12 @@ class BluetoothPrinterModule : Module() {
       mAdapter.cancelDiscovery()
     }
 
-    AsyncFunction("connectDevice") Coroutine { id: String ->
-      Log.d(BluetoothPrinterConstants.MODULE_NAME, "connectDevice")
+    AsyncFunction("connect") Coroutine { id: String ->
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "connect")
+      mAdapter.cancelDiscovery()
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
-      mAdapter.cancelDiscovery()
       return@Coroutine service.connect(socket)
-    }
-
-    AsyncFunction("closeDevice") {
-      Log.d(BluetoothPrinterConstants.MODULE_NAME, "closeDevice")
-      service.close()
     }
 
     AsyncFunction("print") { valuesString: String, count: Int? ->
@@ -98,5 +87,15 @@ class BluetoothPrinterModule : Module() {
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "isEnabled")
       mAdapter.isEnabled()
     }
+  }
+
+  private fun sendDevices() {
+    val devices = mAdapter.bondedDevices.map { device ->
+      mapOf(
+        "id" to device.address,
+        "name" to (device.name ?: "Unknown")
+      )
+    }
+    sendEvent("onDevices", mapOf("devices" to devices))
   }
 }

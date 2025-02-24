@@ -17,6 +17,8 @@ class BluetoothPrinterService {
   public suspend fun connect(socket: BluetoothSocket): Bundle {
     return suspendCancellableCoroutine {
       try {
+        close()
+        delay(1000)
         socket.connect()
         mSocket = socket
         it.resume(Bundle())
@@ -25,12 +27,6 @@ class BluetoothPrinterService {
         it.resumeWithException(e)
       }
     }
-  }
-
-  public fun close() {
-    val socket = mSocket ?: return
-    socket.close()
-    mSocket = null
   }
 
   public fun isConnected(): Boolean {
@@ -120,5 +116,11 @@ class BluetoothPrinterService {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing!", e)
       throw e
     }
+  }
+
+  private fun close() {
+    val socket = mSocket ?: return
+    socket.close()
+    mSocket = null
   }
 }
