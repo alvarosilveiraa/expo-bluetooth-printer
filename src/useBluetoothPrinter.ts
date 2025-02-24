@@ -5,22 +5,23 @@ import { BluetoothPrinterValue } from "./data/BluetoothPrinterValue";
 
 export const useBluetoothPrinter = (deviceName?: string) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const event = useEvent(BluetoothPrinter, "onDevices");
-  const devices = useMemo(() => event?.devices || [], [event]);
   const device = useMemo(
-    () => devices.find(({ name }) => !deviceName || deviceName === name),
-    [devices]
+    () => event?.devices.find(({ name }) => !deviceName || deviceName === name),
+    [event]
   );
   const isLoading = useMemo(() => !event, [event]);
   const isEnabled = useMemo(() => BluetoothPrinter.isEnabled(), []);
 
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   const listenDevices = useCallback(async () => {
     await BluetoothPrinter.checkPermissions();
     BluetoothPrinter.listenDevices();
-  }, []);
-
-  useEffect(() => {
-    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -31,11 +32,21 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     };
   }, [isMounted, isEnabled]);
 
+  const connect = useCallback(async (id: string) => {
+    try {
+      setIsConnecting(true);
+      await BluetoothPrinter.connect(id);
+    } finally {
+      setIsConnecting(false);
+      setIsConnected(BluetoothPrinter.isConnected());
+    }
+  }, []);
+
   useEffect(() => {
-    if (!isMounted || !device || !isEnabled || BluetoothPrinter.isConnected())
+    if (!isMounted || !device || !isEnabled || isConnecting || isConnected)
       return;
-    BluetoothPrinter.connect(device.id);
-  }, [deviceName, isMounted, device, isEnabled]);
+    connect(device.id);
+  }, [deviceName, isMounted, device, isEnabled, isConnecting, isConnected]);
 
   const print = useCallback(
     (values: BluetoothPrinterValue[], count?: number) =>
@@ -44,9 +55,11 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   );
 
   return {
-    devices,
+    device,
     isLoading,
     isEnabled,
+    isConnecting,
+    isConnected,
     print,
   };
 };

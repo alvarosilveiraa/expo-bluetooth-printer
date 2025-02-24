@@ -28,11 +28,6 @@ class BluetoothPrinterService {
     }
   }
 
-  public fun isConnected(): Boolean {
-    val socket = mSocket ?: return false
-    return socket.isConnected()
-  }
-
   public fun print(values: List<BluetoothPrinterValue>, count: Int?) {
     repeat(count ?: 1) {
       values.forEach { value ->
@@ -44,17 +39,19 @@ class BluetoothPrinterService {
     }
   }
 
+  public fun isConnected(): Boolean {
+    val socket = mSocket ?: return false
+    return socket.isConnected()
+  }
+
   private fun printImage(image: BluetoothPrinterImage) {
     val byteArrayList = mutableListOf<ByteArray>()
     try {
       val decoded = Base64.decode(image.value, Base64.DEFAULT)
       val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
-      
-      // public static final int WIDTH_58 = 384;
-      // public static final int WIDTH_80 = 576;
-      val width: Int = image.options?.width ?: 576
+      val width: Int = image.options?.width ?: BluetoothPrinterConstants.WIDTH_80
       val left: Int = image.options?.left ?: 0
-      val newLines: Int = text.options?.newLines ?: 1
+      val newLines: Int = image.options?.newLines ?: 1
       byteArrayList.add(PrintPicture.POS_PrintBMP(bitmap, width, 0, left))
       if (newLines > 0) repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
     } catch (e: Exception) {
