@@ -5,8 +5,13 @@ import { BluetoothPrinterValue } from "./data/BluetoothPrinterValue";
 
 export const useBluetoothPrinter = (deviceName?: string) => {
   const [isMounted, setIsMounted] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
   const event = useEvent(BluetoothPrinter, "onDevices");
   const devices = useMemo(() => event?.devices || [], [event]);
+  const device = useMemo(
+    () => devices.find(({ name }) => !deviceName || deviceName === name),
+    [devices]
+  );
   const isLoading = useMemo(() => !event, [event]);
   const isEnabled = useMemo(() => BluetoothPrinter.isEnabled(), []);
 
@@ -27,24 +32,24 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     };
   }, [isMounted, isEnabled]);
 
+  const connectDevice = useCallback(
+    async (id: string) => {
+      try {
+        await BluetoothPrinter.connectDevice(id);
+      } finally {
+        setIsConnected(BluetoothPrinter.isConnected());
+      }
+    },
+    [device]
+  );
+
   useEffect(() => {
-    if (
-      !isMounted ||
-      !isEnabled ||
-      !devices.length ||
-      BluetoothPrinter.isConnected()
-    )
-      return;
-    const device = devices.find(
-      ({ name }) => !deviceName || deviceName === name
-    );
-    if (device) {
-      BluetoothPrinter.connectDevice(device.id);
-      return () => {
-        BluetoothPrinter.closeDevice();
-      };
-    }
-  }, [deviceName, isMounted, isEnabled, devices]);
+    if (!isMounted || !device || !isEnabled || isConnected) return;
+    connectDevice(device.id);
+    return () => {
+      BluetoothPrinter.closeDevice();
+    };
+  }, [deviceName, isMounted, device, isEnabled, isConnected]);
 
   const print = useCallback(
     (values: BluetoothPrinterValue[]) =>

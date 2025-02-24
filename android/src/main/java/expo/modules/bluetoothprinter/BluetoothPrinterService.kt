@@ -17,6 +17,7 @@ class BluetoothPrinterService {
   public suspend fun connect(socket: BluetoothSocket): Bundle {
     return suspendCancellableCoroutine {
       try {
+        Thread.sleep(1000)
         socket.connect()
         mSocket = socket
         it.resume(Bundle())
@@ -70,7 +71,7 @@ class BluetoothPrinterService {
       val align: String = text.options?.align ?: "left"
       val font: String = text.options?.font ?: "A"
       val fontSize: Int = text.options?.fontSize ?: 1
-      val newLines: Int = text.options?.newLines ?: 0
+      val newLines: Int = text.options?.newLines ?: 1
       val isBold: Boolean = text.options?.isBold ?: false
       val isUnderline: Boolean = text.options?.isUnderline ?: false
       when (align) {
