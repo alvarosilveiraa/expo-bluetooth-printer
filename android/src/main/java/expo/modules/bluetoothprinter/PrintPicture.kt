@@ -146,14 +146,29 @@ object PrintPicture {
         }
     }
 
+    // fun eachLinePixToCmd(bmpPixels: ByteArray, width: Int, mode: Int): ByteArray {
+    //     val result = ByteArray(width / 8 + 3)
+    //     result[0] = 0x1D
+    //     result[1] = 0x2A
+    //     result[2] = ((width - 1) / 8 + 1).toByte()
+
+    //     for (i in 0 until bmpPixels.size) {
+    //         result[i + 3] = bmpPixels[i]
+    //     }
+    //     return result
+    // }
+
     fun eachLinePixToCmd(bmpPixels: ByteArray, width: Int, mode: Int): ByteArray {
-        val result = ByteArray(width / 8 + 3)
+        val resultSize = (width / 8 + 3).coerceAtLeast(bmpPixels.size + 3)
+        val result = ByteArray(resultSize)
         result[0] = 0x1D
         result[1] = 0x2A
         result[2] = ((width - 1) / 8 + 1).toByte()
 
         for (i in 0 until bmpPixels.size) {
-            result[i + 3] = bmpPixels[i]
+            if (i + 3 < result.size) {
+                result[i + 3] = bmpPixels[i]
+            }
         }
         return result
     }

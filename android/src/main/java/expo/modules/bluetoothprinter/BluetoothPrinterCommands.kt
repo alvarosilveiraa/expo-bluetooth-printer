@@ -15,5 +15,19 @@ class BluetoothPrinterCommands {
     internal val BOLD = byteArrayOf(0x1B, 0x45, 1)
     internal val UNDERLINE = byteArrayOf(0x1B, 0x2D, 1)
     internal val CUT = byteArrayOf(0x1D, 0x56, 0x41, 0x10)
+
+    internal fun POS_Set_PrtAndFeedPaper(feed: Int): ByteArray? {
+      if (feed > 255 || feed < 0) return null
+      val data = byteArrayOf(0x1B, "J".toByte(), 0x00).copyOf()
+      data[2] = feed.toByte()
+      return data
+    }
+
+    internal fun POS_Set_Cut(cut: Int): ByteArray? {
+      if (cut > 255 || cut < 0) return null
+      val data = byteArrayOf(0x1D, "V".toByte(), "B".toByte(), 0x00).copyOf()
+      data[3] = cut.toByte()
+      return data
+    }
   }
 }
