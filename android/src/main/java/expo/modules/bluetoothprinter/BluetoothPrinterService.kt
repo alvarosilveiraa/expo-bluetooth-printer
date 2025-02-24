@@ -18,7 +18,6 @@ class BluetoothPrinterService {
     return suspendCancellableCoroutine {
       try {
         close()
-        delay(1000)
         socket.connect()
         mSocket = socket
         it.resume(Bundle())
@@ -50,8 +49,18 @@ class BluetoothPrinterService {
     try {
       val decoded = Base64.decode(base64, Base64.DEFAULT)
       val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
-      val resized = BluetoothPrinterHelpers.resizeBitmap(bitmap, 576)
-      val bitmapByteArray = BluetoothPrinterHelpers.convertBitmapToByteArray(resized)
+      
+      // public static final int WIDTH_58 = 384;
+      // public static final int WIDTH_80 = 576;
+      val bitmapByteArray = PrintPicture.POS_PrintBMP(bitmap, 576, 0, 0);
+      
+      // sendDataByte(Command.ESC_Init);
+      // sendDataByte(Command.LF);
+      // sendDataByte(data);
+      // sendDataByte(PrinterCommand.POS_Set_PrtAndFeedPaper(30));
+      // sendDataByte(PrinterCommand.POS_Set_Cut(1));
+      // sendDataByte(PrinterCommand.POS_Set_PrtInit());
+      
       byteArrayList.add(bitmapByteArray)
     } catch (e: Exception) {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing image!", e)
@@ -96,7 +105,7 @@ class BluetoothPrinterService {
     }
     printByteArrayList(byteArrayList)
   }
-  
+
   private fun printNewLines(newLines: Int) {
     val byteArrayList = mutableListOf<ByteArray>()
     repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }

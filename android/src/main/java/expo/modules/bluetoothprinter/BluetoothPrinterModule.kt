@@ -9,6 +9,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
 import android.Manifest
+import kotlinx.coroutines.delay
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.bluetoothprinter.data.BluetoothPrinterValue
@@ -68,6 +69,7 @@ class BluetoothPrinterModule : Module() {
       mAdapter.cancelDiscovery()
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
+      delay(1000)
       return@Coroutine service.connect(socket)
     }
 
