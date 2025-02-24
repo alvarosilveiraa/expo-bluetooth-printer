@@ -31,6 +31,7 @@ class BluetoothPrinterService {
       values.forEach { value ->
         if (value.image != null) printImage(value.image)
         else if (value.text != null) printText(value.text.value, value.text.options)
+        else if (value.columns != null) printColumns(value.columns)
       }
       printByteArrayList(listOf(BluetoothPrinterCommands.CUT))
     }
@@ -43,12 +44,40 @@ class BluetoothPrinterService {
     val byteArrayList = mutableListOf<ByteArray>()
     val bitmapByteArray = BluetoothPrinterHelpers.convertBitmapToByteArray(resized)
     byteArrayList.add(bitmapByteArray)
-    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
     printByteArrayList(byteArrayList)
   }
 
   private fun printText(text: String, options: BluetoothPrinterTextOptions?) {
     val byteArrayList = mutableListOf<ByteArray>()
+    addTextOptionsToByteArrayList(byteArrayList, options)
+    byteArrayList.add(text.toByteArray(Charsets.UTF_8))
+    byteArrayList.add(BluetoothPrinterCommands.RESET)
+    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+    printByteArrayList(byteArrayList)
+  }
+
+  private fun printColumns(columns: BluetoothPrinterColumns) {
+    val byteArrayList = mutableListOf<ByteArray>()
+    if (columns.left != null) {
+      addTextOptionsToByteArrayList(byteArrayList, columns.left.options)
+      byteArrayList.add(columns.left.value.toByteArray(Charsets.UTF_8))
+      byteArrayList.add(BluetoothPrinterCommands.RESET)
+    }
+    if (columns.center != null) {
+      addTextOptionsToByteArrayList(byteArrayList, columns.center.options)
+      byteArrayList.add(columns.center.value.toByteArray(Charsets.UTF_8))
+      byteArrayList.add(BluetoothPrinterCommands.RESET)
+    }
+    if (columns.right != null) {
+      addTextOptionsToByteArrayList(byteArrayList, columns.right.options)
+      byteArrayList.add(columns.right.value.toByteArray(Charsets.UTF_8))
+      byteArrayList.add(BluetoothPrinterCommands.RESET)
+    }
+    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+    printByteArrayList(byteArrayList)
+  }
+
+  private fun addTextOptionsToByteArrayList(byteArrayList: List<ByteArray>, options: BluetoothPrinterTextOptions?) {
     val validOptions = BluetoothPrinterTextOptions(
       align = options?.align,
       fontSize = options?.fontSize,
@@ -67,10 +96,6 @@ class BluetoothPrinterService {
     }
     if (validOptions.isBold!!) byteArrayList.add(BluetoothPrinterCommands.BOLD)
     if (validOptions.isUnderline!!) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
-    byteArrayList.add(text.toByteArray(Charsets.UTF_8))
-    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
-    byteArrayList.add(BluetoothPrinterCommands.RESET)
-    printByteArrayList(byteArrayList)
   }
 
   private fun printByteArrayList(byteArrayList: List<ByteArray>) {
