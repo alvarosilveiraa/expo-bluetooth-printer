@@ -43,7 +43,7 @@ class BluetoothPrinterService {
       values.forEach { value ->
         if (value.image != null) printImage(value.image)
         else if (value.text != null) printText(value.text)
-        else if (value.newLine != null && value.newLine) printNewLine()
+        else if (value.newLines != null) printNewLines(value.newLines)
       }
       printByteArrayList(listOf(BluetoothPrinterCommands.CUT))
     }
@@ -70,9 +70,9 @@ class BluetoothPrinterService {
       val align: String = text.options?.align ?: "left"
       val font: String = text.options?.font ?: "A"
       val fontSize: Int = text.options?.fontSize ?: 1
+      val newLines: Int = text.options?.newLines ?: 0
       val isBold: Boolean = text.options?.isBold ?: false
       val isUnderline: Boolean = text.options?.isUnderline ?: false
-      val hasNewLine: Boolean = text.options?.hasNewLine ?: true
       when (align) {
         "center" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_CENTER)
         "right" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_RIGHT)
@@ -90,8 +90,8 @@ class BluetoothPrinterService {
       if (isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
       if (isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
       byteArrayList.add(text.value.toByteArray(Charsets.UTF_8))
-      if (hasNewLine) {
-        byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+      if (newLines > 0) {
+        repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
         byteArrayList.add(BluetoothPrinterCommands.RESET)
       }
     } catch (e: Exception) {
@@ -101,9 +101,9 @@ class BluetoothPrinterService {
     printByteArrayList(byteArrayList)
   }
   
-  private fun printNewLine() {
+  private fun printNewLines(newLines: Int) {
     val byteArrayList = mutableListOf<ByteArray>()
-    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+    repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
     printByteArrayList(byteArrayList)
   }
 
