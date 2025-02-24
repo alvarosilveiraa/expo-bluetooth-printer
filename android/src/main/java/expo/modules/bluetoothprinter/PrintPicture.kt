@@ -1,4 +1,4 @@
-package cn.jystudio.bluetooth.escpos.command.sdk
+package expo.modules.bluetoothprinter
 
 import android.graphics.*
 

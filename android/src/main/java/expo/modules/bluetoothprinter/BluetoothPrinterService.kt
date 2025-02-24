@@ -44,15 +44,18 @@ class BluetoothPrinterService {
     }
   }
 
-  private fun printImage(base64: String) {
+  private fun printImage(image: BluetoothPrinterImage) {
     val byteArrayList = mutableListOf<ByteArray>()
     try {
-      val decoded = Base64.decode(base64, Base64.DEFAULT)
+      val decoded = Base64.decode(image.value, Base64.DEFAULT)
       val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
       
       // public static final int WIDTH_58 = 384;
       // public static final int WIDTH_80 = 576;
-      val bitmapByteArray = PrintPicture.POS_PrintBMP(bitmap, 576, 0, 0);
+
+      val width: Int = image.options?.width ?: 576
+      val left: Int = image.options?.left ?: 0
+      val bitmapByteArray = PrintPicture.POS_PrintBMP(bitmap, width, 0, left);
       
       // sendDataByte(Command.ESC_Init);
       // sendDataByte(Command.LF);
