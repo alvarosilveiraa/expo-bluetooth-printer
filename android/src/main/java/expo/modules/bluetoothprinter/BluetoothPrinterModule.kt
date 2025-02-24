@@ -3,7 +3,6 @@ package expo.modules.bluetoothprinter
 import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.functions.Coroutine
 import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothDevice
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -22,8 +21,15 @@ class BluetoothPrinterModule : Module() {
   private val service = BluetoothPrinterService()
   private val receiver = object : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-      if (BluetoothDevice.ACTION_FOUND.equals(intent.action))
-        sendDevices()
+      if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED == intent.action) {
+        val devices = mAdapter.bondedDevices.map { device ->
+          mapOf(
+            "id" to device.address,
+            "name" to (device.name ?: "Unknown")
+          )
+        }
+        sendEvent("onDevices", mapOf("devices" to devices))
+      }
     }
   }
 
@@ -51,11 +57,10 @@ class BluetoothPrinterModule : Module() {
     AsyncFunction("listenDevices") {
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "listenDevices")
       val filter = IntentFilter().apply {
-        addAction(BluetoothDevice.ACTION_FOUND)
+        addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)
       }
       mContext.registerReceiver(receiver, filter)
       mAdapter.startDiscovery()
-      sendDevices()
     }
 
     AsyncFunction("unlistenDevices") {
@@ -64,11 +69,11 @@ class BluetoothPrinterModule : Module() {
       mAdapter.cancelDiscovery()
     }
 
-    AsyncFunction("connectDevice") { id: String ->
+    AsyncFunction("connectDevice") Coroutine { id: String ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "connectDevice")
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
-      service.connect(socket)
+      return@Coroutine service.connect(socket)
     }
 
     AsyncFunction("closeDevice") {
@@ -92,15 +97,5 @@ class BluetoothPrinterModule : Module() {
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "isEnabled")
       mAdapter.isEnabled()
     }
-  }
-
-  private fun sendDevices() {
-    val devices = mAdapter.bondedDevices.map { device ->
-      mapOf(
-        "id" to device.address,
-        "name" to (device.name ?: "Unknown")
-      )
-    }
-    sendEvent("onDevices", mapOf("devices" to devices))
   }
 }

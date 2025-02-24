@@ -1,22 +1,29 @@
 package expo.modules.bluetoothprinter
 
+import android.os.Bundle
 import android.bluetooth.BluetoothSocket
 import android.graphics.BitmapFactory
 import android.util.Base64
 import android.util.Log
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlinx.coroutines.suspendCancellableCoroutine
 import java.io.IOException
 import expo.modules.bluetoothprinter.data.*
 
 class BluetoothPrinterService {
   private var mSocket: BluetoothSocket? = null
 
-  public fun connect(socket: BluetoothSocket) {
-    try {
-      socket.connect()
-      mSocket = socket
-    } catch (e: IOException) {
-      Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while connecting!", e)
-      throw e
+  public suspend fun connect(socket: BluetoothSocket): Bundle {
+    return suspendCancellableCoroutine {
+      try {
+        socket.connect()
+        mSocket = socket
+        it.resume(Bundle())
+      } catch (e: IOException) {
+        Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while connecting!", e)
+        it.resumeWithException(e)
+      }
     }
   }
 
@@ -36,6 +43,7 @@ class BluetoothPrinterService {
       values.forEach { value ->
         if (value.image != null) printImage(value.image)
         else if (value.text != null) printText(value.text)
+        else if (value.newLine != null && value.newLine) printNewLine()
       }
       printByteArrayList(listOf(BluetoothPrinterCommands.CUT))
     }
@@ -59,15 +67,20 @@ class BluetoothPrinterService {
   private fun printText(text: BluetoothPrinterText) {
     val byteArrayList = mutableListOf<ByteArray>()
     try {
-      val align: String = options?.align ?: "left"
-      val fontSize: Int = options?.fontSize ?: 1
-      val isBold: Boolean = options?.isBold ?: false
-      val isUnderline: Boolean = options?.isUnderline ?: false
-      val hasNewLine: Boolean = options?.hasNewLine ?: false
+      val align: String = text.options?.align ?: "left"
+      val font: String = text.options?.font ?: "A"
+      val fontSize: Int = text.options?.fontSize ?: 1
+      val isBold: Boolean = text.options?.isBold ?: false
+      val isUnderline: Boolean = text.options?.isUnderline ?: false
+      val hasNewLine: Boolean = text.options?.hasNewLine ?: true
       when (align) {
         "center" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_CENTER)
         "right" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_RIGHT)
         else -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_LEFT)
+      }
+      when (font) {
+        "A" -> byteArrayList.add(BluetoothPrinterCommands.FONT_A)
+        "B" -> byteArrayList.add(BluetoothPrinterCommands.FONT_B)
       }
       when (fontSize) {
         2 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_2)
@@ -77,12 +90,20 @@ class BluetoothPrinterService {
       if (isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
       if (isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
       byteArrayList.add(text.value.toByteArray(Charsets.UTF_8))
-      if (hasNewLine) byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
-      byteArrayList.add(BluetoothPrinterCommands.RESET)
+      if (hasNewLine) {
+        byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+        byteArrayList.add(BluetoothPrinterCommands.RESET)
+      }
     } catch (e: Exception) {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing text!", e)
       throw e
     }
+    printByteArrayList(byteArrayList)
+  }
+  
+  private fun printNewLine() {
+    val byteArrayList = mutableListOf<ByteArray>()
+    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
     printByteArrayList(byteArrayList)
   }
 

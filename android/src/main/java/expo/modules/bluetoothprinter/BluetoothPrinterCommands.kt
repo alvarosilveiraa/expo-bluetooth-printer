@@ -7,6 +7,8 @@ class BluetoothPrinterCommands {
     internal val ALIGN_LEFT = byteArrayOf(0x1B, 0x61, 0)
     internal val ALIGN_CENTER = byteArrayOf(0x1B, 0x61, 1)
     internal val ALIGN_RIGHT = byteArrayOf(0x1B, 0x61, 2)
+    internal val FONT_A = byteArrayOf(0x1B, 0x4D, 0x00)
+    internal val FONT_B = byteArrayOf(0x1B, 0x4D, 0x01)
     internal val FONT_SIZE_1 = byteArrayOf(0x1D, 0x21, 0x00)
     internal val FONT_SIZE_2 = byteArrayOf(0x1D, 0x21, 0x11)
     internal val FONT_SIZE_3 = byteArrayOf(0x1D, 0x21, 0x22)
