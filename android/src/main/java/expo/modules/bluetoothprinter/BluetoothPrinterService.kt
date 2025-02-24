@@ -54,12 +54,9 @@ class BluetoothPrinterService {
       // public static final int WIDTH_80 = 576;
       val width: Int = image.options?.width ?: 576
       val left: Int = image.options?.left ?: 0
-      byteArrayList.add(byteArrayOf(0x1B, "@".toByte()))
-      byteArrayList.add(byteArrayOf(0x0A))
+      val newLines: Int = text.options?.newLines ?: 1
       byteArrayList.add(PrintPicture.POS_PrintBMP(bitmap, width, 0, left))
-      byteArrayList.add(BluetoothPrinterCommands.POS_Set_PrtAndFeedPaper(30))
-      byteArrayList.add(BluetoothPrinterCommands.POS_Set_Cut(1))
-      byteArrayList.add(byteArrayOf(0x1B, "@".toByte()))
+      if (newLines > 0) repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
     } catch (e: Exception) {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing image!", e)
       throw e

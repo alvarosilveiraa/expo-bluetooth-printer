@@ -38,8 +38,8 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   }, [deviceName, isMounted, device, isEnabled]);
 
   const print = useCallback(
-    (values: BluetoothPrinterValue[]) =>
-      BluetoothPrinter.print(JSON.stringify(values)),
+    (values: BluetoothPrinterValue[], count?: number) =>
+      BluetoothPrinter.print(JSON.stringify(values), count),
     []
   );
 
