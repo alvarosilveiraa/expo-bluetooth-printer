@@ -10,6 +10,7 @@ declare class BluetoothPrinterModule extends NativeModule<{
   closeDevice(): Promise<void>;
   print(valuesString: string, count?: number): Promise<void>;
   isEnabled(): boolean;
+  isConnected(): boolean;
 }
 
 export const BluetoothPrinter = requireNativeModule<BluetoothPrinterModule>(

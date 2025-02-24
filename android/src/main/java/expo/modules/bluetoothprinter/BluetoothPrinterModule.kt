@@ -83,6 +83,11 @@ class BluetoothPrinterModule : Module() {
       service.print(values, count)
     }
 
+    Function("isConnected") {
+      Log.d(BluetoothPrinterConstants.MODULE_NAME, "isConnected")
+      service.isConnected()
+    }
+
     Function("isEnabled") {
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "isEnabled")
       mAdapter.isEnabled()

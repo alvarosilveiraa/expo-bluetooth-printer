@@ -28,7 +28,13 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   }, [isMounted, isEnabled]);
 
   useEffect(() => {
-    if (!isMounted || !isEnabled || !devices.length) return;
+    if (
+      !isMounted ||
+      !isEnabled ||
+      !devices.length ||
+      BluetoothPrinter.isConnected()
+    )
+      return;
     const device = devices.find(
       ({ name }) => !deviceName || deviceName === name
     );

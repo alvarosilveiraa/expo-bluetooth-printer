@@ -26,84 +26,75 @@ class BluetoothPrinterService {
     mSocket = null
   }
 
+  public fun isConnected(): Boolean {
+    val socket = mSocket ?: return false
+    return socket.isConnected()
+  }
+
   public fun print(values: List<BluetoothPrinterValue>, count: Int?) {
     repeat(count ?: 1) {
       values.forEach { value ->
         if (value.image != null) printImage(value.image)
-        else if (value.text != null) printText(value.text.value, value.text.options)
-        else if (value.columns != null) printColumns(value.columns)
+        else if (value.text != null) printText(value.text)
       }
       printByteArrayList(listOf(BluetoothPrinterCommands.CUT))
     }
   }
 
   private fun printImage(base64: String) {
-    val decoded = Base64.decode(base64, Base64.DEFAULT)
-    val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
-    val resized = BluetoothPrinterHelpers.resizeBitmap(bitmap, 576)
     val byteArrayList = mutableListOf<ByteArray>()
-    val bitmapByteArray = BluetoothPrinterHelpers.convertBitmapToByteArray(resized)
-    byteArrayList.add(bitmapByteArray)
+    try {
+      val decoded = Base64.decode(base64, Base64.DEFAULT)
+      val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return
+      val resized = BluetoothPrinterHelpers.resizeBitmap(bitmap, 576)
+      val bitmapByteArray = BluetoothPrinterHelpers.convertBitmapToByteArray(resized)
+      byteArrayList.add(bitmapByteArray)
+    } catch (e: Exception) {
+      Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing image!", e)
+      throw e
+    }
     printByteArrayList(byteArrayList)
   }
 
-  private fun printText(text: String, options: BluetoothPrinterTextOptions?) {
+  private fun printText(text: BluetoothPrinterText) {
     val byteArrayList = mutableListOf<ByteArray>()
-    addTextOptionsToByteArrayList(byteArrayList, options)
-    byteArrayList.add(text.toByteArray(Charsets.UTF_8))
-    byteArrayList.add(BluetoothPrinterCommands.RESET)
-    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+    try {
+      val align: String = options?.align ?: "left"
+      val fontSize: Int = options?.fontSize ?: 1
+      val isBold: Boolean = options?.isBold ?: false
+      val isUnderline: Boolean = options?.isUnderline ?: false
+      val hasNewLine: Boolean = options?.hasNewLine ?: false
+      when (align) {
+        "center" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_CENTER)
+        "right" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_RIGHT)
+        else -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_LEFT)
+      }
+      when (fontSize) {
+        2 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_2)
+        3 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_3)
+        else -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_1)
+      }
+      if (isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
+      if (isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
+      byteArrayList.add(text.value.toByteArray(Charsets.UTF_8))
+      if (hasNewLine) byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
+      byteArrayList.add(BluetoothPrinterCommands.RESET)
+    } catch (e: Exception) {
+      Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing text!", e)
+      throw e
+    }
     printByteArrayList(byteArrayList)
-  }
-
-  private fun printColumns(columns: BluetoothPrinterColumns) {
-    val byteArrayList = mutableListOf<ByteArray>()
-    if (columns.left != null) {
-      addTextOptionsToByteArrayList(byteArrayList, columns.left.options)
-      byteArrayList.add(columns.left.value.toByteArray(Charsets.UTF_8))
-      byteArrayList.add(BluetoothPrinterCommands.RESET)
-    }
-    if (columns.center != null) {
-      addTextOptionsToByteArrayList(byteArrayList, columns.center.options)
-      byteArrayList.add(columns.center.value.toByteArray(Charsets.UTF_8))
-      byteArrayList.add(BluetoothPrinterCommands.RESET)
-    }
-    if (columns.right != null) {
-      addTextOptionsToByteArrayList(byteArrayList, columns.right.options)
-      byteArrayList.add(columns.right.value.toByteArray(Charsets.UTF_8))
-      byteArrayList.add(BluetoothPrinterCommands.RESET)
-    }
-    byteArrayList.add(BluetoothPrinterCommands.NEW_LINE)
-    printByteArrayList(byteArrayList)
-  }
-
-  private fun addTextOptionsToByteArrayList(byteArrayList: List<ByteArray>, options: BluetoothPrinterTextOptions?) {
-    val validOptions = BluetoothPrinterTextOptions(
-      align = options?.align,
-      fontSize = options?.fontSize,
-      isBold = options?.isBold,
-      isUnderline = options?.isUnderline,
-    )
-    when (validOptions.align!!) {
-      "center" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_CENTER)
-      "right" -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_RIGHT)
-      else -> byteArrayList.add(BluetoothPrinterCommands.ALIGN_LEFT)
-    }
-    when (validOptions.fontSize!!) {
-      2 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_2)
-      3 -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_3)
-      else -> byteArrayList.add(BluetoothPrinterCommands.FONT_SIZE_1)
-    }
-    if (validOptions.isBold!!) byteArrayList.add(BluetoothPrinterCommands.BOLD)
-    if (validOptions.isUnderline!!) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
   }
 
   private fun printByteArrayList(byteArrayList: List<ByteArray>) {
     val socket = mSocket ?: return
-    if (!socket.isConnected) return
     try {
-      byteArrayList.forEach { socket.outputStream.write(it) }
-      socket.outputStream.flush()
+      if (!socket.isConnected()) return
+      byteArrayList.forEach {
+        socket.outputStream.write(it)
+        socket.outputStream.flush()
+        Thread.sleep(50)
+      }
     } catch (e: IOException) {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing!", e)
       throw e
