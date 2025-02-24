@@ -73,6 +73,7 @@ class BluetoothPrinterModule : Module() {
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "connectDevice")
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
+      mAdapter.cancelDiscovery()
       return@Coroutine service.connect(socket)
     }
 

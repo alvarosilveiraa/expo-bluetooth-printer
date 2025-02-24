@@ -5,7 +5,6 @@ import { BluetoothPrinterValue } from "./data/BluetoothPrinterValue";
 
 export const useBluetoothPrinter = (deviceName?: string) => {
   const [isMounted, setIsMounted] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
   const event = useEvent(BluetoothPrinter, "onDevices");
   const devices = useMemo(() => event?.devices || [], [event]);
   const device = useMemo(
@@ -32,24 +31,14 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     };
   }, [isMounted, isEnabled]);
 
-  const connectDevice = useCallback(
-    async (id: string) => {
-      try {
-        await BluetoothPrinter.connectDevice(id);
-      } finally {
-        setIsConnected(BluetoothPrinter.isConnected());
-      }
-    },
-    [device]
-  );
-
   useEffect(() => {
-    if (!isMounted || !device || !isEnabled || isConnected) return;
-    connectDevice(device.id);
+    if (!isMounted || !device || !isEnabled || BluetoothPrinter.isConnected())
+      return;
+    BluetoothPrinter.connectDevice(device.id);
     return () => {
       BluetoothPrinter.closeDevice();
     };
-  }, [deviceName, isMounted, device, isEnabled, isConnected]);
+  }, [deviceName, isMounted, device, isEnabled]);
 
   const print = useCallback(
     (values: BluetoothPrinterValue[]) =>

@@ -17,7 +17,6 @@ class BluetoothPrinterService {
   public suspend fun connect(socket: BluetoothSocket): Bundle {
     return suspendCancellableCoroutine {
       try {
-        Thread.sleep(1000)
         socket.connect()
         mSocket = socket
         it.resume(Bundle())
