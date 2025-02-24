@@ -1,9 +1,10 @@
 import { useEvent } from "expo";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { BluetoothPrinter } from "./BluetoothPrinter";
 import { BluetoothPrinterValue } from "./data/BluetoothPrinterValue";
 
 export const useBluetoothPrinter = (deviceName?: string) => {
+  const [isMounted, setIsMounted] = useState(false);
   const event = useEvent(BluetoothPrinter, "onDevices");
   const devices = useMemo(() => event?.devices || [], [event]);
   const isLoading = useMemo(() => !event, [event]);
@@ -15,15 +16,19 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   }, []);
 
   useEffect(() => {
-    if (!isEnabled) return;
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isMounted || !isEnabled) return;
     listenDevices();
     return () => {
       BluetoothPrinter.unlistenDevices();
     };
-  }, []);
+  }, [isMounted, isEnabled]);
 
   useEffect(() => {
-    if (!isEnabled || !devices.length) return;
+    if (!isMounted || !isEnabled || !devices.length) return;
     const device = devices.find(
       ({ name }) => !deviceName || deviceName === name
     );
@@ -33,7 +38,7 @@ export const useBluetoothPrinter = (deviceName?: string) => {
         BluetoothPrinter.closeDevice();
       };
     }
-  }, [deviceName, devices]);
+  }, [deviceName, isMounted, isEnabled, devices]);
 
   const print = useCallback(
     (values: BluetoothPrinterValue[]) =>

@@ -75,6 +75,7 @@ class BluetoothPrinterService {
 
   private fun printByteArrayList(byteArrayList: List<ByteArray>) {
     val socket = mSocket ?: return
+    if (!socket.isConnected) return
     try {
       byteArrayList.forEach { socket.outputStream.write(it) }
       socket.outputStream.flush()
