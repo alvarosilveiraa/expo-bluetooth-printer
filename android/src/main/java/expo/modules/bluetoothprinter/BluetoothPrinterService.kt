@@ -94,7 +94,8 @@ class BluetoothPrinterService {
       }
       if (isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
       if (isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
-      byteArrayList.add(text.value.toByteArray(Charsets.ISO_8859_1))
+      byteArrayList.add(BluetoothPrinterCommands.UTF_8)
+      byteArrayList.add(text.value.toByteArray(Charsets.UTF_8))
       if (newLines > 0) {
         repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
         byteArrayList.add(BluetoothPrinterCommands.RESET)
@@ -133,11 +134,8 @@ class BluetoothPrinterService {
   private fun printByteArrayList(byteArrayList: List<ByteArray>) {
     val socket = mSocket ?: return
     try {
-      byteArrayList.forEach {
-        socket.outputStream.write(it)
-        socket.outputStream.flush()
-        Thread.sleep(50)
-      }
+      byteArrayList.forEach { socket.outputStream.write(it) }
+      socket.outputStream.flush()
     } catch (e: IOException) {
       Log.e(BluetoothPrinterConstants.MODULE_NAME, "An error occurred while printing!", e)
       throw e
