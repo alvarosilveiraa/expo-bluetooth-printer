@@ -12,12 +12,12 @@ public class BluetoothPrinterModule: Module {
 
     AsyncFunction("unlistenDevices")
 
-    AsyncFunction("connectDevice")
-
-    AsyncFunction("closeDevice")
+    AsyncFunction("connect")
 
     AsyncFunction("print")
 
     Function("isEnabled")
+
+    Function("isConnected")
   }
 }

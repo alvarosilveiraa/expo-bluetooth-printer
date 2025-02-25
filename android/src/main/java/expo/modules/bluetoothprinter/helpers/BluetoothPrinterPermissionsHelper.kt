@@ -1,19 +1,17 @@
-package expo.modules.bluetoothprinter
+package expo.modules.bluetoothprinter.helpers
 
+import android.Manifest
 import android.os.Bundle
-import android.graphics.Bitmap
-import android.util.Log
 import expo.modules.interfaces.permissions.Permissions
 import expo.modules.kotlin.Promise
 import expo.modules.kotlin.exception.CodedException
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import java.io.ByteArrayOutputStream
 
-class BluetoothPrinterHelpers {
+class BluetoothPrinterPermissionsHelper {
   companion object {
-    internal suspend fun askForPermissions(manager: Permissions, vararg args: String): Bundle {
+    internal suspend fun check(manager: Permissions): Bundle {
       return suspendCoroutine {
         Permissions.askForPermissionsWithPermissionsManager(
           manager,
@@ -29,7 +27,9 @@ class BluetoothPrinterHelpers {
               it.resumeWithException(CodedException(code, message, cause))
             }
           },
-          *args
+          Manifest.permission.BLUETOOTH_CONNECT,
+          Manifest.permission.BLUETOOTH_SCAN,
+          Manifest.permission.ACCESS_FINE_LOCATION
         )
       }
     }

@@ -8,11 +8,11 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.util.Log
-import android.Manifest
 import kotlinx.coroutines.delay
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 import expo.modules.bluetoothprinter.data.BluetoothPrinterValue
+import expo.modules.bluetoothprinter.helpers.BluetoothPrinterPermissionsHelper
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 
@@ -39,13 +39,8 @@ class BluetoothPrinterModule : Module() {
 
     AsyncFunction("checkPermissions") Coroutine { ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "checkPermissions")
-      val permissionsManager = appContext.permissions ?: throw NoPermissionsModuleException()
-      return@Coroutine BluetoothPrinterHelpers.askForPermissions(
-        permissionsManager,
-        Manifest.permission.BLUETOOTH_CONNECT,
-        Manifest.permission.BLUETOOTH_SCAN,
-        Manifest.permission.ACCESS_FINE_LOCATION
-      )
+      val manager = appContext.permissions ?: throw NoPermissionsModuleException()
+      return@Coroutine BluetoothPrinterPermissionsHelper.check(manager)
     }
 
     AsyncFunction("listenDevices") {

@@ -32,26 +32,28 @@ export const useBluetoothPrinter = (deviceName?: string) => {
     };
   }, [isMounted, isEnabled]);
 
-  const connect = useCallback(async (id: string) => {
+  const connect = useCallback(async () => {
+    if (!device || isConnecting || isConnected) return;
     try {
       setIsConnecting(true);
-      await BluetoothPrinter.connect(id);
+      await BluetoothPrinter.connect(device.id);
     } finally {
       setIsConnecting(false);
       setIsConnected(BluetoothPrinter.isConnected());
     }
-  }, []);
+  }, [device, isConnecting, isConnected]);
 
   useEffect(() => {
-    if (!isMounted || !device || !isEnabled || isConnecting || isConnected)
-      return;
-    connect(device.id);
-  }, [deviceName, isMounted, device, isEnabled, isConnecting, isConnected]);
+    if (!isMounted || !isEnabled) return;
+    connect();
+  }, [isMounted, isEnabled, connect]);
 
   const print = useCallback(
-    (values: BluetoothPrinterValue[], count?: number) =>
-      BluetoothPrinter.print(JSON.stringify(values), count),
-    []
+    async (values: BluetoothPrinterValue[], count?: number) => {
+      await connect();
+      return BluetoothPrinter.print(JSON.stringify(values), count);
+    },
+    [connect]
   );
 
   return {
