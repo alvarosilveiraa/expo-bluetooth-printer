@@ -91,7 +91,7 @@ class BluetoothPrinterImageHelper {
         sumB += i * hist[i]
         val mB = sumB / wB
         val mF = (sum - sumB) / wF
-        val variance = wB * wF * (mB - mF) * (mB - mF)
+        val variance = (wB * wF * (mB - mF) * (mB - mF)).toDouble()
         if (variance > varMax) {
           varMax = variance
           threshold = i
