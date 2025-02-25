@@ -94,8 +94,7 @@ class BluetoothPrinterService {
       }
       if (isBold) byteArrayList.add(BluetoothPrinterCommands.BOLD)
       if (isUnderline) byteArrayList.add(BluetoothPrinterCommands.UNDERLINE)
-      byteArrayList.add(BluetoothPrinterCommands.UTF_8)
-      byteArrayList.add(text.value.toByteArray(Charsets.UTF_8))
+      byteArrayList.add(text.value.toByteArray(Charsets.ISO_8859_15))
       if (newLines > 0) {
         repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
         byteArrayList.add(BluetoothPrinterCommands.RESET)

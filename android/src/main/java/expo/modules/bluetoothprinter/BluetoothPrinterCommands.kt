@@ -2,7 +2,6 @@ package expo.modules.bluetoothprinter
 
 class BluetoothPrinterCommands {
   companion object {
-    internal var UTF_8 = byteArrayOf(0x1B, 0x74, 0x10)
     internal val ALIGN_LEFT = byteArrayOf(0x1B, 0x61, 0)
     internal val ALIGN_CENTER = byteArrayOf(0x1B, 0x61, 1)
     internal val ALIGN_RIGHT = byteArrayOf(0x1B, 0x61, 2)
