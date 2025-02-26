@@ -20,7 +20,7 @@ class BluetoothPrinterQRCodeHelper {
       val width = bitmap.width
       val height = bitmap.height
       val bytesPerRow = (width + 7) / 8
-      val imageData = ByteArrayOutputStream()
+      val qrCodeData = ByteArrayOutputStream()
       val escPosHeader = byteArrayOf(
         0x1D,
         0x76,
@@ -31,10 +31,10 @@ class BluetoothPrinterQRCodeHelper {
         height.toByte(),
         0
       )
-      imageData.write(escPosHeader)
+      qrCodeData.write(escPosHeader)
       val leftBytes = ByteArray(left / 8) { 0x00 }
       for (y in 0 until height) {
-        imageData.write(leftBytes)
+        qrCodeData.write(leftBytes)
         for (x in 0 until bytesPerRow) {
           var byte = 0
           for (bit in 0..7) {
@@ -46,10 +46,10 @@ class BluetoothPrinterQRCodeHelper {
               }
             }
           }
-          imageData.write(byte)
+          qrCodeData.write(byte)
         }
       }
-      return imageData.toByteArray()
+      return qrCodeData.toByteArray()
     }
 
     private fun qrCodeBitmap(data: String, size: Int): Bitmap? {

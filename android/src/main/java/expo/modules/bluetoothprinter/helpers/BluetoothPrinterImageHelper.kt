@@ -15,10 +15,11 @@ class BluetoothPrinterImageHelper {
       val resizedBitmap = resizeBitmap(bitmap, width)
       val coloredBitmap = colorizeBitmap(resizedBitmap)
       val left = calculateLeft(width, maxWidth, align)
-      return bitmapToByteArray(coloredBitmap, left)
+      val alignedBitmap = alignBitmap(coloredBitmap, left, maxWidth)
+      return bitmapToByteArray(alignedBitmap)
     }
 
-    private fun bitmapToByteArray(bitmap: Bitmap, left: Int): ByteArray {
+    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
       val width = bitmap.width
       val height = bitmap.height
       val bytesPerRow = (width + 7) / 8
@@ -28,15 +29,13 @@ class BluetoothPrinterImageHelper {
         0x76,
         0x30,
         0x00,
-        ((width + left) / 8).toByte(),
+        (width / 8).toByte(),
         0,
         height.toByte(),
         0
       )
       imageData.write(escPosHeader)
-      val leftBytes = ByteArray(left / 8) { 0x00 }
       for (y in 0 until height) {
-        imageData.write(leftBytes)
         for (x in 0 until bytesPerRow) {
           var byte = 0
           for (bit in 0..7) {
@@ -52,6 +51,14 @@ class BluetoothPrinterImageHelper {
         }
       }
       return imageData.toByteArray()
+    }
+
+    private fun alignBitmap(bitmap: Bitmap, left: Int, maxWidth: Int): Bitmap {
+      val newBitmap = Bitmap.createBitmap(maxWidth, bitmap.height, Bitmap.Config.RGB_565)
+      val canvas = Canvas(newBitmap)
+      canvas.drawColor(Color.WHITE)
+      canvas.drawBitmap(bitmap, left.toFloat(), 0f, null)
+      return newBitmap
     }
 
     private fun colorizeBitmap(bitmap: Bitmap): Bitmap {
