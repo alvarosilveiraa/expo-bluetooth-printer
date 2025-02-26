@@ -21,7 +21,16 @@ class BluetoothPrinterQRCodeHelper {
       val height = bitmap.height
       val bytesPerRow = (width + 7) / 8
       val imageData = ByteArrayOutputStream()
-      val escPosHeader = byteArrayOf(0x1D, 0x76, 0x30, 0x00, (width / 8).toByte(), 0, height.toByte(), 0)
+      val escPosHeader = byteArrayOf(
+        0x1D,
+        0x76,
+        0x30,
+        0x00,
+        ((width + left) / 8).toByte(),
+        0,
+        height.toByte(),
+        0
+      )
       imageData.write(escPosHeader)
       val leftBytes = ByteArray(left / 8) { 0x00 }
       for (y in 0 until height) {
