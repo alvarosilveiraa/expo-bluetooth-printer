@@ -10,19 +10,22 @@ import java.io.ByteArrayOutputStream
 
 class BluetoothPrinterQRCodeHelper {
   companion object {
-    internal fun generateQRCodeByteArray(data: String, size: Int): ByteArray? {
+    internal fun generateQRCodeByteArray(data: String, size: Int, maxSize: Int, align: String): ByteArray? {
       val bitmap = qrCodeBitmap(data, size) ?: return null
-      return bitmapToByteArray(bitmap)
+      val left = calculateLeft(size, maxSize, align)
+      return bitmapToByteArray(bitmap, left)
     }
 
-    private fun bitmapToByteArray(bitmap: Bitmap): ByteArray {
+    private fun bitmapToByteArray(bitmap: Bitmap, left: Int): ByteArray {
       val width = bitmap.width
       val height = bitmap.height
       val bytesPerRow = (width + 7) / 8
       val imageData = ByteArrayOutputStream()
       val escPosHeader = byteArrayOf(0x1D, 0x76, 0x30, 0x00, (width / 8).toByte(), 0, height.toByte(), 0)
       imageData.write(escPosHeader)
+      val leftBytes = ByteArray(left / 8) { 0x00 }
       for (y in 0 until height) {
+        imageData.write(leftBytes)
         for (x in 0 until bytesPerRow) {
           var byte = 0
           for (bit in 0..7) {
@@ -56,6 +59,15 @@ class BluetoothPrinterQRCodeHelper {
         e.printStackTrace()
         null
       }
+    }
+
+    private fun calculateLeft(size: Int, maxSize: Int, align: String): Int {
+      val rawLeft = when (align) {
+        "center" -> (maxSize - size) / 2
+        "right" -> maxSize - size
+        else -> 0
+      }.coerceAtLeast(0)
+      return rawLeft - (rawLeft % 8)
     }
   }
 }

@@ -112,11 +112,13 @@ class BluetoothPrinterService {
   private fun printQRCode(qrCode: BluetoothPrinterQRCode) {
     val byteArrayList = mutableListOf<ByteArray>()
     try {
-      val size = qrCode.options?.size ?: 200
+      val size = qrCode.options?.size ?: mWidth
+      val align = qrCode.options?.align ?: "left"
       val newLines = qrCode.options?.newLines ?: 1
       val qrCodeByteArray = BluetoothPrinterQRCodeHelper.generateQRCodeByteArray(
         qrCode.value,
-        size
+        if (size > mWidth) mWidth else size,
+        align
       ) ?: return
       byteArrayList.add(qrCodeByteArray)
       if (newLines > 0) repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }

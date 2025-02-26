@@ -108,11 +108,12 @@ class BluetoothPrinterImageHelper {
     }
 
     private fun calculateLeft(width: Int, maxWidth: Int, align: String): Int {
-      return when (align.lowercase()) {
+      val rawLeft = when (align) {
         "center" -> (maxWidth - width) / 2
         "right" -> maxWidth - width
         else -> 0
       }.coerceAtLeast(0)
+      return rawLeft - (rawLeft % 8)
     }
   }
 }
