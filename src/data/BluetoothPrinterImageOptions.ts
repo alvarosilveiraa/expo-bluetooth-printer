@@ -1,5 +1,5 @@
 export type BluetoothPrinterImageOptions = {
   width?: number;
-  left?: number;
+  align?: "left" | "center" | "right";
   newLines?: number;
 };

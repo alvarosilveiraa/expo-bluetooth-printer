@@ -9,11 +9,12 @@ import java.io.ByteArrayOutputStream
 
 class BluetoothPrinterImageHelper {
   companion object {
-    internal fun generateBase64ByteArray(base64: String, width: Int, left: Int): ByteArray? {
+    internal fun generateBase64ByteArray(base64: String, width: Int, maxWidth: Int, align: String): ByteArray? {
       val decoded = Base64.decode(base64, Base64.DEFAULT)
       val bitmap = BitmapFactory.decodeByteArray(decoded, 0, decoded.size) ?: return null
       val resizedBitmap = resizeBitmap(bitmap, width)
       val coloredBitmap = colorizeBitmap(resizedBitmap)
+      val left = calculateLeft(width, maxWidth, align)
       return bitmapToByteArray(coloredBitmap, left)
     }
 
@@ -52,13 +53,19 @@ class BluetoothPrinterImageHelper {
       for (y in 0 until height) {
         for (x in 0 until width) {
           val pixel = bitmap.getPixel(x, y)
+          val alpha = Color.alpha(pixel)
+          if (alpha < 128) {
+            bwBitmap.setPixel(x, y, Color.WHITE)
+            continue
+          }
           val gray = (Color.red(pixel) + Color.green(pixel) + Color.blue(pixel)) / 3
-          val bwColor = if (gray < threshold) Color.BLACK else Color.WHITE
+          val bwColor = if (gray < threshold) Color.WHITE else Color.BLACK
           bwBitmap.setPixel(x, y, bwColor)
         }
       }
       return bwBitmap
     }
+
 
     private fun resizeBitmap(bitmap: Bitmap, width: Int): Bitmap {
       val aspectRatio = bitmap.height.toFloat() / bitmap.width.toFloat()
@@ -98,6 +105,14 @@ class BluetoothPrinterImageHelper {
         }
       }
       return threshold
+    }
+
+    private fun calculateLeft(width: Int, maxWidth: Int, align: String): Int {
+      return when (align.lowercase()) {
+        "center" -> (maxWidth - width) / 2
+        "right" -> maxWidth - width
+        else -> 0
+      }.coerceAtLeast(0)
     }
   }
 }

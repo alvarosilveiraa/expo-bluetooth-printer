@@ -16,10 +16,12 @@ import expo.modules.bluetoothprinter.helpers.BluetoothPrinterQRCodeHelper
 
 class BluetoothPrinterService {
   private var mSocket: BluetoothSocket? = null
+  private var mWidth = BluetoothPrinterConstants.WIDTH_80
 
-  public suspend fun connect(socket: BluetoothSocket): Bundle {
+  public suspend fun connect(socket: BluetoothSocket, width?: Int): Bundle {
     return suspendCancellableCoroutine {
       try {
+        if (width != null && width < mWidth) mWidth = width
         close()
         socket.connect()
         mSocket = socket
@@ -52,13 +54,14 @@ class BluetoothPrinterService {
   private fun printImage(image: BluetoothPrinterImage) {
     val byteArrayList = mutableListOf<ByteArray>()
     try {
-      val width = image.options?.width ?: BluetoothPrinterConstants.WIDTH_80
-      val left = image.options?.left ?: 0
+      val width = image.options?.width ?: mWidth
+      val align = image.options?.align ?: "left"
       val newLines = image.options?.newLines ?: 1
       val imageByteArray = BluetoothPrinterImageHelper.generateBase64ByteArray(
         image.value,
-        width,
-        left
+        if (width > mWidth) mWidth else width,
+        mWidth,
+        align
       ) ?: return
       byteArrayList.add(imageByteArray)
       if (newLines > 0) repeat(newLines) { byteArrayList.add(BluetoothPrinterCommands.NEW_LINE) }
