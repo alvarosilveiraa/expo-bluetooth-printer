@@ -59,13 +59,13 @@ class BluetoothPrinterModule : Module() {
       mAdapter.cancelDiscovery()
     }
 
-    AsyncFunction("connect") Coroutine { id: String ->
+    AsyncFunction("connect") Coroutine { id: String, width: Int? ->
       Log.d(BluetoothPrinterConstants.MODULE_NAME, "connect")
       mAdapter.cancelDiscovery()
       val device = mAdapter.getRemoteDevice(id)
       val socket = device.createRfcommSocketToServiceRecord(BluetoothPrinterConstants.SOCKET_UUID)
       delay(1000)
-      return@Coroutine service.connect(socket)
+      return@Coroutine service.connect(socket, width)
     }
 
     AsyncFunction("print") { valuesString: String, count: Int? ->

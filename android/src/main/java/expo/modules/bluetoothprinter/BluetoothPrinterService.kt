@@ -18,7 +18,7 @@ class BluetoothPrinterService {
   private var mSocket: BluetoothSocket? = null
   private var mWidth = BluetoothPrinterConstants.WIDTH_80
 
-  public suspend fun connect(socket: BluetoothSocket, width?: Int): Bundle {
+  public suspend fun connect(socket: BluetoothSocket, width: Int?): Bundle {
     return suspendCancellableCoroutine {
       try {
         if (width != null && width < mWidth) mWidth = width
@@ -118,6 +118,7 @@ class BluetoothPrinterService {
       val qrCodeByteArray = BluetoothPrinterQRCodeHelper.generateQRCodeByteArray(
         qrCode.value,
         if (size > mWidth) mWidth else size,
+        mWidth,
         align
       ) ?: return
       byteArrayList.add(qrCodeByteArray)
