@@ -51,6 +51,8 @@ export const useBluetoothPrinter = (deviceName?: string) => {
   const print = useCallback(
     async (values: BluetoothPrinterValue[], count?: number) => {
       await connect();
+      if (!BluetoothPrinter.isConnected())
+        throw new Error("The printer is unconnected!");
       return BluetoothPrinter.print(JSON.stringify(values), count);
     },
     [connect]
